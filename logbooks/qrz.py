@@ -3,6 +3,9 @@
 ``POST https://logbook.qrz.com/api`` with ``KEY`` (the logbook's API access key, QRZ Logbook >
 Settings), ``ACTION=FETCH`` and ``OPTION=MAX:n,AFTERLOGID:id``. The response is name=value pairs
 (``RESULT``, ``COUNT``, ``REASON``, ``ADIF``). QRZ asks for paging and an identifying User-Agent.
+
+Writing uses the same key with ``ACTION=INSERT`` and ``ADIF=<one record>``; the answer is
+``RESULT=OK&LOGID=...``, or ``RESULT=FAIL&REASON=...`` (a duplicate says so in REASON).
 """
 from __future__ import annotations
 
@@ -12,13 +15,14 @@ from urllib.parse import parse_qsl, unquote_plus
 
 import requests
 
-from .adif import parse_adif
-from .base import LogbookError
+from .adif import parse_adif, to_adif
+from .base import LogbookError, WriteResult
 from .net import HEADERS
 
 ENDPOINT = "https://logbook.qrz.com/api"
 TIMEOUT = 120
 PAGE = 250  # QRZ's recommended page size
+WRITE_TIMEOUT = 15
 
 
 class QrzError(LogbookError):
@@ -76,3 +80,24 @@ def normalize(rec: dict[str, str]) -> dict[str, str]:
     if rec.get("app_qrzlog_status", "").upper() == "C":
         rec["qrzcom_qso_download_status"] = "Y"
     return rec
+
+
+def insert(key: str, record: dict[str, str]) -> WriteResult:
+    """Add one QSO with ``ACTION=INSERT`` (same API key as reading)."""
+    data = {"KEY": key, "ACTION": "INSERT", "ADIF": to_adif(record)}
+    try:
+        resp = requests.post(ENDPOINT, data=data, headers=HEADERS, timeout=WRITE_TIMEOUT)
+    except requests.RequestException as exc:
+        return WriteResult(False, f"could not reach the QRZ Logbook: {type(exc).__name__}")
+    if resp.status_code != 200:
+        return WriteResult(False, f"HTTP {resp.status_code}")
+    body = _parse(resp.content.decode("utf-8", errors="replace"))
+    result = body.get("RESULT", "").upper()
+    reason = body.get("REASON", "")
+    if result in ("OK", "REPLACE"):
+        return WriteResult(True)
+    if "duplicate" in reason.lower():
+        return WriteResult(True, "already in the log", duplicate=True)
+    if result == "AUTH":
+        reason = (reason or "not authorised") + " (check QRZ_LOGBOOK_KEY; the Logbook API needs a subscription)"
+    return WriteResult(False, reason or result or "no RESULT in the response")

@@ -99,8 +99,35 @@ def _write_wavelog(record: dict) -> WriteResult:
                           config.wavelog_station_id(), record)
 
 
+def _write_cloudlog(record: dict) -> WriteResult:
+    return wavelog.insert(config.env("CLOUDLOG_URL"), config.env("CLOUDLOG_KEY"),
+                          config.env("CLOUDLOG_STATION_ID"), record, label="Cloudlog")
+
+
+def _write_qrz(record: dict) -> WriteResult:
+    return qrz.insert(config.env("QRZ_LOGBOOK_KEY"), record)
+
+
+def _write_clublog(record: dict) -> WriteResult:
+    return clublog.insert(config.env("CLUBLOG_EMAIL"), config.env("CLUBLOG_APP_PASSWORD"),
+                          config.env("CLUBLOG_CALLSIGN"), config.env("CLUBLOG_API_KEY"), record)
+
+
+def _write_wrl(record: dict) -> WriteResult:
+    my_grid = config.env("MY_GRID")
+    if my_grid.upper() == "AA00AA":  # the .env.example placeholder
+        my_grid = ""
+    return wrl.insert(config.env("WRL_API_KEY"), record, my_grid=my_grid,
+                      station_callsign=config.env("WRL_STATION_CALLSIGN"),
+                      logbook_id=config.env("WRL_LOGBOOK_ID"))
+
+
 WRITERS = {
     "wavelog": _write_wavelog,
+    "cloudlog": _write_cloudlog,
+    "qrz": _write_qrz,
+    "clublog": _write_clublog,
+    "wrl": _write_wrl,
 }
 
 

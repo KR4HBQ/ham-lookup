@@ -7,20 +7,28 @@
 WRL contacts carry no QSL / LoTW confirmation status, so this source gives worked entities only.
 ``dxcc`` is filled in by WRL shortly after a contact is created; until then the entity comes from
 the callsign.
+
+Writing is ``POST /v1/contacts`` with one JSON contact. Required: ``programId``, ``call``,
+``timestamp``, ``freq`` (MHz), ``band`` and ``mode``; unknown fields are refused. An already logged
+QSO answers ``409 DUPLICATE_CONTACT``, which counts as logged. 60 writes per minute.
 """
 from __future__ import annotations
 
+import re
 import time
 from typing import Iterator
 
 import requests
 
-from .base import LogbookError
+from .base import LogbookError, WriteResult
 from .net import HEADERS
 
 ENDPOINT = "https://api.worldradioleague.com/v1/contacts"
 TIMEOUT = 60
 PAGE = 100
+WRITE_TIMEOUT = 15
+PROGRAM_ID = "HamLookup"
+_GRID = re.compile(r"^[A-Ra-r]{2}(?:[0-9]{2}(?:[A-Xa-x]{2}(?:[0-9]{2})?)?)?$")
 
 HAS_CONFIRMATIONS = False
 
@@ -89,3 +97,60 @@ def fetch(key: str, *, page: int = PAGE, max_pages: int = 2000) -> Iterator[dict
         cursor = (body.get("meta") or {}).get("nextCursor")
         if not cursor:
             return
+
+
+def to_contact(record: dict[str, str], *, my_grid: str = "", station_callsign: str = "",
+               logbook_id: str = "") -> dict:
+    """An ADIF-style record as a WRL ``ContactCreate`` (only the fields WRL accepts)."""
+    freq = record.get("freq", "")
+    try:
+        freq_mhz = float(freq)
+    except ValueError:
+        raise WrlError("World Radio League needs a frequency - fill in Freq (MHz)") from None
+    c = {
+        "programId": PROGRAM_ID,
+        "call": record.get("call", ""),
+        "timestamp": {"qsoDate": record.get("qso_date", ""), "timeOn": record.get("time_on", "")},
+        "freq": freq_mhz,
+        "band": record.get("band", ""),
+        "mode": record.get("submode") or record.get("mode", ""),
+        "rstSent": record.get("rst_sent", ""),
+        "rstRcvd": record.get("rst_rcvd", ""),
+        "txPwr": record.get("tx_pwr", ""),
+        "notes": " / ".join(v for v in (record.get("comment", ""), record.get("notes", "")) if v)[:2000],
+        "name": record.get("name", "")[:255],
+        "qth": record.get("qth", "")[:100],
+        "state": record.get("state", "")[:50],
+        "stationCallsign": station_callsign,
+        "logbookId": logbook_id,
+    }
+    for key, grid in (("gridsquare", record.get("gridsquare", "")), ("myGridsquare", my_grid)):
+        if _GRID.match(grid):
+            c[key] = grid
+    return {k: v for k, v in c.items() if v not in ("", None)}
+
+
+def insert(key: str, record: dict[str, str], **contact_opts) -> WriteResult:
+    """Log one contact."""
+    try:
+        contact = to_contact(record, **contact_opts)
+    except WrlError as exc:
+        return WriteResult(False, str(exc))
+    headers = {**HEADERS, "Authorization": f"Bearer {key}", "Accept": "application/json"}
+    try:
+        resp = requests.post(ENDPOINT, json=contact, headers=headers, timeout=WRITE_TIMEOUT)
+    except requests.RequestException as exc:
+        return WriteResult(False, f"could not reach World Radio League: {type(exc).__name__}")
+    if resp.status_code in (200, 201):
+        return WriteResult(True)
+    try:
+        err = (resp.json() or {}).get("error") or {}
+    except (ValueError, AttributeError):
+        err = {}
+    code = err.get("code", "") if isinstance(err, dict) else ""
+    if code == "DUPLICATE_CONTACT":
+        return WriteResult(True, "already in the log", duplicate=True)
+    msg = f"{code}: {err.get('message', '')}".strip(": ") if code else f"HTTP {resp.status_code}"
+    if isinstance(err, dict) and err.get("hint"):
+        msg += f" ({err['hint']})"
+    return WriteResult(False, msg)
