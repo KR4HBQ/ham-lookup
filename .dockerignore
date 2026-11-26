@@ -1,0 +1,6 @@
+.env
+.git
+Old/
+data/
+__pycache__/
+*.adi

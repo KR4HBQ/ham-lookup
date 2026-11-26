@@ -1,0 +1,16 @@
+# Secrets: each self-hoster keeps their own .env next to docker-compose.yml
+.env
+.env.*
+!.env.example
+
+# Log caches and exports (contain your QSOs)
+data/
+*.adi
+*.adif
+
+# Local leftovers
+Old/
+*.OLD*.html
+__pycache__/
+*.pyc
+.venv/

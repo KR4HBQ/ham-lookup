@@ -1,0 +1,2430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ham Callsign Lookup</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2316181d'/><circle cx='16' cy='28' r='2.5' fill='%2300d4aa'/><path d='M20.2,23.8 A6,6 0 0,0 11.8,23.8' fill='none' stroke='%2300d4aa' stroke-width='1.5' stroke-linecap='round'/><path d='M23.8,20.2 A11,11 0 0,0 8.2,20.2' fill='none' stroke='%2300d4aa' stroke-width='1.5' stroke-linecap='round'/><path d='M27.3,16.7 A16,16 0 0,0 4.7,16.7' fill='none' stroke='%2300d4aa' stroke-width='1.5' stroke-linecap='round'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.maptiler.com/maptiler-sdk-js/latest/maptiler-sdk.css" />
+  <script src="https://cdn.maptiler.com/maptiler-sdk-js/latest/maptiler-sdk.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.maptiler.com/maplibre-gl-js/latest/maplibre-gl.css" />
+  <!-- Leaflet fallback for no-WebGL2 environments -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #16181d;
+      --card:     #1e2028;
+      --border:   #2a2d35;
+      --text:     #e8eaf0;
+      --muted:    #8b909a;
+      --accent:   #00d4aa;
+      --accent-dim: rgba(0,212,170,.12);
+      --danger:   #ff6b6b;
+      --warn:     #f0a030;
+      --blue:     #5eb0ef;
+      --radius:   8px;
+      --hdr-bg:   #0f1117;
+    }
+
+    body {
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+      padding-top: 62px;
+    }
+
+    /* ── Search / nav bar ── */
+    #search-section {
+      background: var(--hdr-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+    .logo {
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .logo:hover { opacity: .8; }
+    .logo em { color: var(--accent); font-style: normal; }
+    #callsign-input {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-family: 'Courier New', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      padding: 8px 14px;
+      border-radius: var(--radius);
+      width: 210px;
+      text-transform: uppercase;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    #callsign-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+    #search-btn {
+      background: var(--accent);
+      color: #0a1a15;
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 9px 22px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    #search-btn:hover  { opacity: .88; }
+    #search-btn:disabled { opacity: .4; cursor: not-allowed; }
+    #error-msg { color: var(--danger); font-size: 13px; display: none; }
+
+    /* ── Loading overlay ── */
+    #loading {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(22,24,29,.88);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+    }
+    #loading.active { display: flex; }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading p { color: var(--muted); font-size: 13px; letter-spacing: .5px; }
+    #loading-sources {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 180px;
+      margin-top: 2px;
+    }
+    .loading-src {
+      color: var(--accent);
+      font-size: 12px;
+      animation: pill-in .18s ease both;
+    }
+
+    /* ── Result header ── */
+    #header-card {
+      display: none;
+      background: var(--hdr-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 28px;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    #header-card.visible { display: flex; }
+    .cs-large {
+      font-family: 'Courier New', monospace;
+      color: var(--accent);
+      font-size: 44px;
+      font-weight: 700;
+      letter-spacing: 6px;
+      line-height: 1;
+    }
+    .header-meta { display: flex; flex-direction: column; gap: 5px; }
+    .header-name {
+      color: var(--text);
+      font-size: 2rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .header-sub  { color: var(--muted); font-size: 14px; }
+    .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-green  { background: rgba(0,212,170,.12); color: var(--accent); border: 1px solid rgba(0,212,170,.3); }
+    .badge-blue   { background: rgba(94,176,239,.1);  color: var(--blue);   border: 1px solid rgba(94,176,239,.25); }
+    .badge-orange { background: rgba(240,160,48,.1);  color: var(--warn);   border: 1px solid rgba(240,160,48,.25); }
+    .badge-grey   { background: rgba(139,144,154,.08); color: var(--muted);  border: 1px solid var(--border); }
+    .badge-red    { background: rgba(255,107,107,.1);  color: var(--danger); border: 1px solid rgba(255,107,107,.25); }
+    .badge-notable { background: rgba(255,215,0,.12); color: #ffd700; border: 1px solid rgba(255,215,0,.3); }
+    .badge-special { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(0,212,170,.3); }
+
+    /* ── Three-column grid ── */
+    #main-grid {
+      display: none;
+      grid-template-columns: 290px 1fr 350px;
+      min-height: calc(100vh - 180px);
+    }
+
+    .col {
+      padding: 16px;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .col:last-child { border-right: none; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .card-title {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      padding: 9px 14px 8px;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+    }
+    .card-body { padding: 14px; }
+
+    /* ── Key-value rows ── */
+    .kv { display: flex; flex-direction: column; gap: 8px; }
+    .kv-row { display: flex; gap: 10px; align-items: baseline; }
+    .kv-label { color: var(--muted); min-width: 90px; font-size: 12px; flex-shrink: 0; }
+    .kv-value { color: var(--text); word-break: break-word; }
+    .kv-value.accent { color: var(--accent); font-weight: 600; }
+    .kv-value.warn   { color: var(--warn); }
+    .kv-large { font-size: 1.1rem; font-weight: 500; }
+
+    /* ── Map (in left column card) ── */
+    #map {
+      height: 220px;
+      border-radius: 0 0 var(--radius) var(--radius);
+      cursor: pointer;
+      position: relative;
+    }
+    #map:hover { filter: brightness(1.07); }
+
+    /* ── Full-screen map overlay ── */
+    #map-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.72);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    #map-overlay.open { display: flex; }
+    .map-overlay-box {
+      position: relative;
+      width: 85vw;
+      height: 80vh;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--card-bg);
+      box-shadow: 0 8px 40px rgba(0,0,0,.6);
+    }
+    #map-overlay-close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      z-index: 10001;
+      background: rgba(0,0,0,.55);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 18px;
+      line-height: 32px;
+      text-align: center;
+      cursor: pointer;
+      padding: 0;
+    }
+    #map-overlay-close:hover { background: rgba(0,0,0,.85); }
+    #map-expanded { width: 100%; height: 100%; position: relative; }
+
+    /* ── Map style switcher pills ── */
+    .map-style-switcher {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 10;
+      display: flex;
+      gap: 2px;
+      background: rgba(14,16,20,.78);
+      border-radius: 14px;
+      padding: 3px 5px;
+      backdrop-filter: blur(4px);
+      pointer-events: all;
+    }
+    .map-style-btn {
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,.6);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .3px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+      line-height: 1.6;
+    }
+    .map-style-btn.active {
+      background: var(--accent);
+      color: #0a0c10;
+    }
+    .map-style-btn:hover:not(.active) { color: #fff; }
+
+    /* ── Clock ── */
+    #local-clock {
+      color: var(--accent);
+      font-family: 'Courier New', monospace;
+      font-size: 2.5rem;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 3px;
+      padding: 4px 0;
+    }
+    #local-tz { color: var(--muted); font-size: 12px; text-align: center; margin-top: 2px; }
+
+    /* ── Weather ── */
+    .weather-main {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .weather-icon { display: flex; align-items: center; flex-shrink: 0; }
+    .weather-condition { font-size: 1.5rem; font-weight: 600; color: var(--text); }
+    .weather-temp      { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+
+    /* ── Photos ── */
+    .photos {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .photo-block { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+    .photo-block img {
+      width: auto;
+      max-height: 240px;
+      object-fit: contain;
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+    .photo-src { color: var(--muted); font-size: 11px; text-align: center; }
+    .photo-src a {
+      color: var(--accent);
+      opacity: .75;
+      text-decoration: none;
+      font-size: 0.8rem;
+    }
+    .photo-src a:hover { opacity: 1; text-decoration: underline; }
+    .photo-placeholder {
+      width: 90px; height: 90px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Courier New', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 2px;
+    }
+
+    /* ── Center column sub-grid ── */
+    #center-sub-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .sub-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ── Tables ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .data-table th {
+      color: var(--muted);
+      text-align: left;
+      padding: 5px 8px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .data-table th:hover { color: var(--accent); }
+    .data-table td {
+      padding: 5px 8px;
+      border-bottom: 1px solid rgba(42,45,53,.6);
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(255,255,255,.02); }
+    .sort-asc::after  { content: " ↑"; color: var(--accent); }
+    .sort-desc::after { content: " ↓"; color: var(--accent); }
+
+    /* ── Worked badge ── */
+    .worked-badge {
+      font-size: 15px;
+      font-weight: 600;
+      padding: 10px 16px;
+      border-radius: var(--radius);
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .worked-yes {
+      background: rgba(0,212,170,.1);
+      color: var(--accent);
+      border: 1px solid rgba(0,212,170,.3);
+    }
+    .worked-no {
+      background: rgba(139,144,154,.08);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .qso-count { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+    .qso-count span { color: var(--accent); font-weight: 600; }
+    .qso-scroll { overflow-x: auto; max-height: 420px; overflow-y: auto; }
+
+    /* ── Online / offline indicators ── */
+    .dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+    .dot-on  { background: var(--accent); }
+    .dot-off { background: var(--muted); }
+
+    /* ── AllStarLink node rows ── */
+    .asl-node {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .asl-node:last-child { border-bottom: none; }
+    .asl-node-num { font-family: 'Courier New', monospace; font-weight: 700; color: var(--text); }
+    .asl-node-desc { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .asl-section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 8px;
+      margin-top: 4px;
+    }
+    .asl-divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+    .echolink-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .echolink-link:hover { text-decoration: underline; }
+
+    /* ── PSK note ── */
+    .psk-note {
+      color: var(--muted);
+      font-size: 11px;
+      font-style: italic;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    /* ── Status bar ── */
+    #status-bar {
+      display: none;
+      background: var(--hdr-bg);
+      border-top: 1px solid var(--border);
+      padding: 10px 24px;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    #status-bar.visible { display: flex; }
+    .status-label { color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .5px; margin-right: 4px; text-transform: uppercase; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .pill-ok  { background: rgba(0,212,170,.1);   color: var(--accent);  border: 1px solid rgba(0,212,170,.25); }
+    .pill-err { background: rgba(255,107,107,.1);  color: var(--danger);  border: 1px solid rgba(255,107,107,.25); }
+    .pill-nc  { background: rgba(139,144,154,.08); color: var(--muted);   border: 1px solid var(--border); }
+    .pill-nf  { background: rgba(240,160,48,.08);  color: var(--warn);    border: 1px solid rgba(240,160,48,.2); }
+
+    /* ── Pill stagger animation ── */
+    @keyframes pill-in {
+      from { opacity: 0; transform: translateY(3px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .pill-anim { animation: pill-in .22s ease both; }
+
+    /* ── Wavelog badges ── */
+    .wl-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+
+    /* ── DX cluster links ── */
+    .dx-link {
+      display: block;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 3px 0;
+    }
+    .dx-link:hover { text-decoration: underline; }
+    .dx-note { color: var(--muted); font-size: 11px; font-style: italic; margin-top: 10px; line-height: 1.5; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3d48; }
+
+    /* ── Responsive ── */
+    @media (max-width: 960px) {
+      #main-grid { grid-template-columns: 1fr; }
+      .col { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+
+    .hidden { display: none !important; }
+    .na { color: var(--muted); font-style: italic; font-size: 13px; }
+    a { color: var(--accent); }
+
+    /* ── Notable person banner ── */
+    #notable-banner {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      overflow: hidden;
+    }
+    .notable-thumb {
+      float: right;
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-left: 12px;
+      margin-bottom: 6px;
+    }
+    .notable-name {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+    .notable-profession {
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 12px;
+    }
+    .notable-extract {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p>Fetching from sources… <span id="loading-elapsed" style="color:var(--accent);font-variant-numeric:tabular-nums;"></span></p>
+  <p id="loading-parallel" style="color:var(--muted);font-size:12px;letter-spacing:.3px;">Querying 9 sources in parallel…</p>
+  <div id="loading-sources"></div>
+</div>
+
+<!-- Search bar -->
+<div id="search-section">
+  <div class="logo" onclick="resetPage()" onmousedown="event.preventDefault()">&#x2316; Ham<em>Lookup</em></div>
+  <input id="callsign-input" type="text" placeholder="W1AW" maxlength="15"
+    autocomplete="off" autocapitalize="characters" spellcheck="false">
+  <button id="search-btn">Look Up</button>
+  <span id="error-msg"></span>
+  <span id="utc-clock" style="font-family:'Courier New',monospace;color:var(--accent);font-size:1.1rem;margin-left:auto;white-space:nowrap;letter-spacing:.3px;"></span>
+</div>
+
+<!-- Result header -->
+<div id="header-card">
+  <div class="cs-large" id="hdr-callsign"></div>
+  <div class="header-meta">
+    <div class="header-name" id="hdr-name"></div>
+    <div class="badges"      id="hdr-badges"></div>
+  </div>
+</div>
+
+<!-- Three-column grid -->
+<div id="main-grid">
+
+  <!-- ── LEFT COLUMN ── -->
+  <div class="col">
+
+    <!-- Location -->
+    <div class="card">
+      <div class="card-title">Location</div>
+      <div class="card-body kv" id="qth-kv"></div>
+    </div>
+
+    <!-- Local time -->
+    <div class="card">
+      <div class="card-title">Local Time at QTH</div>
+      <div class="card-body">
+        <div id="local-clock">--:--:--</div>
+        <div id="local-tz">UTC</div>
+      </div>
+    </div>
+
+    <!-- Weather -->
+    <div class="card" id="weather-card">
+      <div class="card-title">Weather at QTH</div>
+      <div class="card-body">
+        <div class="weather-main">
+          <span class="weather-icon" id="wx-icon"></span>
+          <span class="weather-condition" id="wx-condition">—</span>
+          <span class="weather-temp" id="wx-temp"></span>
+        </div>
+        <div class="kv" id="weather-kv"></div>
+      </div>
+    </div>
+
+    <!-- Map -->
+    <div class="card" id="map-card" style="display:none;">
+      <div class="card-title">Map</div>
+      <div id="map">
+        <div class="map-style-switcher" id="map-style-switcher">
+          <button class="map-style-btn active" data-style="hybrid" onclick="setMapStyle('hybrid')">Hybrid</button>
+          <button class="map-style-btn" data-style="streets-v2" onclick="setMapStyle('streets-v2')">Streets</button>
+          <button class="map-style-btn" data-style="topo-v2" onclick="setMapStyle('topo-v2')">Topo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Location blurb (Claude-generated bullets, hidden until data arrives) -->
+    <div id="location-blurb" style="display:none;margin-top:8px;padding:8px 0;"></div>
+
+  </div><!-- /left -->
+
+  <!-- ── CENTER COLUMN ── -->
+  <div class="col">
+
+    <!-- Notable person banner (shown when current holder is notable) -->
+    <div id="notable-banner" style="display:none;"></div>
+
+    <!-- Photos — full width -->
+    <div class="card">
+      <div class="card-title">Photos</div>
+      <div class="card-body">
+        <div class="photos" id="photos-block"></div>
+      </div>
+    </div>
+
+    <!-- Social icons row (populated by renderSocialIcons) -->
+    <div id="social-icons-row" style="display:none;"></div>
+
+    <!-- Two-column sub-grid -->
+    <div id="center-sub-grid">
+
+      <!-- Left sub-column -->
+      <div class="sub-col">
+
+        <!-- License details -->
+        <div class="card">
+          <div class="card-title">License Details</div>
+          <div class="card-body kv" id="license-kv"></div>
+        </div>
+
+        <!-- Digital platforms (LoTW / eQSL / QSL) -->
+        <div class="card">
+          <div class="card-title">QSL &amp; Digital Platforms</div>
+          <div class="card-body kv" id="flags-kv"></div>
+        </div>
+
+      </div><!-- /left sub-col -->
+
+      <!-- Right sub-column -->
+      <div class="sub-col">
+
+      <!-- Portable Operations -->
+      <div class="card" id="portable-ops-card" style="display:none;">
+        <div class="card-title">Portable Operations</div>
+        <div class="card-body" id="portable-ops-body"></div>
+      </div>
+        <!-- Digital Voice -->
+        <div class="card">
+          <div class="card-title">Digital Voice</div>
+          <div class="card-body" id="dv-body">
+            <span class="na">Loading…</span>
+          </div>
+        </div>
+
+        <!-- Callsign History -->
+        <div class="card" id="ae7q-card">
+          <div class="card-title">Callsign History</div>
+          <div class="card-body" id="ae7q-body">
+            <span class="na">Loading…</span>
+          </div>
+        </div>
+
+      </div><!-- /right sub-col -->
+
+    </div><!-- /center-sub-grid -->
+
+    <!-- PSK Reporter — full width -->
+    <div class="card">
+      <div class="card-title">Last Seen on Air — PSK Reporter (past 1 hr)</div>
+      <div class="card-body" id="psk-body">
+        <p class="psk-note">Spots are reported by receiving stations — mode shown is what was decoded,
+          not necessarily what you transmitted.</p>
+        <span class="na">No recent spots</span>
+      </div>
+    </div>
+
+  </div><!-- /center -->
+
+  <!-- ── RIGHT COLUMN ── -->
+  <div class="col">
+    <div class="card" id="wavelog-card" style="display:none;">
+      <div class="card-title">Wavelog — Log Check</div>
+      <div class="card-body" id="wavelog-body">
+        <span class="na">Loading…</span>
+      </div>
+    </div>
+
+    <!-- DX Path (bearing + distance + solar + band conditions) -->
+    <div class="card" id="dxpath-card" style="display:none;">
+      <div class="card-title">DX Path</div>
+      <div class="card-body" id="dxpath-body">
+        <span class="na">Loading…</span>
+      </div>
+    </div>
+
+    <!-- Top Contacts (from Wavelog log) -->
+    <div class="card" id="top-contacts-card" style="display:none;">
+      <div class="card-title">Your Top Contacts</div>
+      <div class="card-body" id="top-contacts-body">
+        <span class="na">Loading…</span>
+      </div>
+    </div>
+
+    <!-- Recent Lookups (localStorage, frontend only) -->
+    <div class="card" id="recent-lookups-card" style="display:none;">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>Recent Lookups</span>
+        <a href="#" style="font-size:0.7rem;color:var(--muted);text-transform:none;
+          letter-spacing:0;font-weight:400;"
+          onclick="event.preventDefault();localStorage.removeItem('hamlookup_recent');
+            renderRecentLookups();">clear</a>
+      </div>
+      <div class="card-body" id="recent-lookups-body"></div>
+    </div>
+  </div>
+
+</div><!-- /main-grid -->
+
+<!-- Source status bar -->
+<div id="status-bar">
+  <span class="status-label">Sources</span>
+  <span id="status-pills"></span>
+</div>
+
+<!-- Version footer -->
+<div style="text-align:center;padding:8px;font-size:0.75rem;color:#4a5060;">
+  HamLookup {{ app_version }}
+</div>
+
+<!-- Full-screen map overlay (hidden until mini map is clicked) -->
+<div id="map-overlay" onclick="if(event.target===this)closeMapOverlay();">
+  <div class="map-overlay-box">
+    <button id="map-overlay-close" onclick="closeMapOverlay();" title="Close">&#x2715;</button>
+    <div id="map-expanded">
+      <div class="map-style-switcher" id="map-overlay-style-switcher">
+        <button class="map-style-btn active" data-style="hybrid" onclick="setMapStyle('hybrid')">Hybrid</button>
+        <button class="map-style-btn" data-style="streets-v2" onclick="setMapStyle('streets-v2')">Streets</button>
+        <button class="map-style-btn" data-style="topo-v2" onclick="setMapStyle('topo-v2')">Topo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>window.WAVELOG_URL = {{ wavelog_url | tojson }};</script>
+<script>const MAPTILER_KEY = {{ maptiler_key | tojson }};</script>
+<script>
+maptilersdk.config.apiKey = MAPTILER_KEY;
+// Valid MapTiler keys are alphanumeric with no underscores, ≥10 chars
+const _HAS_MAPTILER = !!(MAPTILER_KEY && /^[A-Za-z0-9]{10,}$/.test(MAPTILER_KEY));
+const _HAS_WEBGL2 = (() => {
+  try {
+    const c = document.createElement('canvas');
+    return !!(c.getContext('webgl2') || c.getContext('experimental-webgl2'));
+  } catch { return false; }
+})();
+const _OSM_STYLES = {
+  streets: { version: 8, sources: { osm:  { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],   tileSize: 256, attribution: '© OpenStreetMap contributors'  } }, layers: [{ id: 'osm',  type: 'raster', source: 'osm'  }] },
+  topo:    { version: 8, sources: { topo: { type: 'raster', tiles: ['https://tile.opentopomap.org/{z}/{x}/{y}.png'],     tileSize: 256, attribution: '© OpenTopoMap contributors'   } }, layers: [{ id: 'topo', type: 'raster', source: 'topo' }] },
+};
+function _mapStyle(id) {
+  if (_HAS_MAPTILER) return id;
+  return id === 'topo-v2' ? _OSM_STYLES.topo : _OSM_STYLES.streets;
+}
+
+// ── State ────────────────────────────────────────────────────────────────────
+let leafletMap        = null;
+let overlayMap        = null;
+let _mapLat           = null;
+let _mapLon           = null;
+let _currentMapStyle  = 'hybrid';
+let clockIntvl    = null;
+let clockTZ       = null;
+let sortState     = { col: 0, dir: 1 };
+let elapsedIntvl      = null;
+let sourceIntvl       = null;
+let _lookupInProgress = false;
+let _currentCallsign  = null;
+let _currentLookupData = null;
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const val = v => (v != null && v !== '') ? v : null;
+
+function esc(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function kv(label, value, cls = '') {
+  if (!val(value)) return '';
+  return `<div class="kv-row">
+    <span class="kv-label">${label}</span>
+    <span class="kv-value ${cls}">${esc(value)}</span>
+  </div>`;
+}
+
+function kvLarge(label, value, cls = '') {
+  if (!val(value)) return '';
+  return `<div class="kv-row">
+    <span class="kv-label">${label}</span>
+    <span class="kv-value kv-large ${cls}">${esc(value)}</span>
+  </div>`;
+}
+
+function badge(text, type = 'badge-grey') {
+  return `<span class="badge ${type}">${esc(text)}</span>`;
+}
+
+function pill(src, status, tip) {
+  const cls  = { ok:'pill-ok', error:'pill-err', not_configured:'pill-nc',
+                 not_found:'pill-nf', skipped:'pill-nc' }[status] || 'pill-nc';
+  const icon = { ok:'✓', error:'✗', not_configured:'○',
+                 not_found:'–', skipped:'○' }[status] || '?';
+  return `<span class="pill ${cls}" title="${esc(tip)}">${icon} ${esc(src)}</span>`;
+}
+
+function firstVal(...vals) {
+  for (const v of vals) if (val(v)) return v;
+  return null;
+}
+
+function toggleRow(id) {
+  const el  = document.getElementById(id);
+  if (!el) return;
+  const shown = el.style.display !== 'none';
+  el.style.display = shown ? 'none' : 'table-row';
+  const tog = document.getElementById('tog-' + id);
+  if (tog) tog.textContent = shown ? '▶' : '▼';
+}
+
+// ── License class expansion ──────────────────────────────────────────────────
+const LIC_NAMES = {
+  T:'Technician',        G:'General',                  E:'Extra (Amateur Extra)',
+  A:'Advanced',          N:'Novice',                   P:'Technician Plus',
+  C:'Club',              R:'Restricted Radiotelephone', M:'Military Recreation',
+  K:'Club (Historical)', H:'Novice (Historical)',       U:'Unknown',
+  B:'Base Station',
+};
+function expandClass(cls) {
+  if (!val(cls)) return null;
+  const k = cls.trim().toUpperCase();
+  return LIC_NAMES[k] ? `${k} (${LIC_NAMES[k]})` : cls;
+}
+
+// ── SVG weather icons ────────────────────────────────────────────────────────
+function weatherIcon(code) {
+  const ST = `fill="none" stroke="#00d4aa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"`;
+  const wrap = inner => `<svg width="32" height="32" viewBox="0 0 32 32" ${ST} style="display:block;">${inner}</svg>`;
+
+  // Reusable shapes
+  const cloud  = `<path d="M7,22 Q4,22 4,19 Q4,15 8,15 Q8,11 13,10 Q18,9 21,13 Q26,13 27,17 Q27,21 23,21 Z"/>`;
+  const drops  = `<line x1="11" y1="24" x2="9"  y2="29"/><line x1="17" y1="24" x2="15" y2="29"/><line x1="23" y1="24" x2="21" y2="29"/>`;
+  const flakes = `<line x1="10" y1="24" x2="10" y2="30"/><line x1="7"  y1="27" x2="13" y2="27"/><line x1="7.8" y1="24.8" x2="12.2" y2="29.2"/><line x1="12.2" y1="24.8" x2="7.8" y2="29.2"/><line x1="21" y1="24" x2="21" y2="30"/><line x1="18" y1="27" x2="24" y2="27"/><line x1="18.8" y1="24.8" x2="23.2" y2="29.2"/><line x1="23.2" y1="24.8" x2="18.8" y2="29.2"/>`;
+  const bolt   = `<polyline points="18,21 14,28 18,28 13,33"/>`;
+  const fogLines = `<line x1="4" y1="10" x2="28" y2="10"/><line x1="4" y1="16" x2="28" y2="16"/><line x1="4" y1="22" x2="22" y2="22"/><line x1="7" y1="28" x2="20" y2="28"/>`;
+  const sun    = `<circle cx="16" cy="13" r="5"/><line x1="16" y1="2"  x2="16" y2="6" /><line x1="16" y1="20" x2="16" y2="24"/><line x1="5"  y1="13" x2="9"  y2="13"/><line x1="23" y1="13" x2="27" y2="13"/><line x1="8.5" y1="5.5"  x2="11" y2="8"  /><line x1="21" y1="18"  x2="23.5" y2="20.5"/><line x1="23.5" y1="5.5" x2="21" y2="8"  /><line x1="11" y1="18"  x2="8.5"  y2="20.5"/>`;
+  const miniSun = `<circle cx="10" cy="10" r="3.5"/><line x1="10" y1="3"  x2="10" y2="5.5"/><line x1="10" y1="14.5" x2="10" y2="17"/><line x1="3" y1="10" x2="5.5" y2="10"/><line x1="14.5" y1="10" x2="17" y2="10"/><line x1="5.5" y1="5.5" x2="7.2" y2="7.2"/><line x1="12.8" y1="12.8" x2="14.5" y2="14.5"/><line x1="14.5" y1="5.5" x2="12.8" y2="7.2"/><line x1="7.2" y1="12.8" x2="5.5" y2="14.5"/>`;
+  const partCloud = `<path d="M14,26 Q11,26 11,23 Q11,20 15,20 Q15,17 19,16 Q23,15 25,18 Q28,18 29,21 Q29,24 26,24 Z"/>`;
+
+  const c = Number(code);
+  if (c === 0)                                           return wrap(sun);
+  if ([1,2,3].includes(c))                              return wrap(miniSun + partCloud);
+  if ([45,48].includes(c))                              return wrap(fogLines);
+  if ([51,53,55,61,63,65,80,81,82].includes(c))        return wrap(cloud + drops);
+  if ([71,73,75,77,85,86].includes(c))                  return wrap(cloud + flakes);
+  if ([95,96,99].includes(c))                           return wrap(cloud + bolt);
+  return wrap(cloud);
+}
+
+// ── Antenna icon ─────────────────────────────────────────────────────────────
+function antennaIcon(color) {
+  return `<svg width="16" height="20" viewBox="0 0 16 20" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:6px;"><line x1="8" y1="4" x2="8" y2="19" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="6" x2="2" y2="2" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="6" x2="14" y2="2" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="10" x2="3" y2="7" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="10" x2="13" y2="7" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/><line x1="5" y1="19" x2="11" y2="19" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+}
+
+// ── Clock ────────────────────────────────────────────────────────────────────
+function startClock(timezone) {
+  clockTZ = timezone;
+  if (clockIntvl) clearInterval(clockIntvl);
+  const tick = () => {
+    try {
+      const opts = { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false };
+      if (clockTZ) opts.timeZone = clockTZ;
+      $('local-clock').textContent = new Intl.DateTimeFormat('en-US', opts).format(new Date());
+    } catch {
+      $('local-clock').textContent = new Date().toUTCString().slice(17,25);
+    }
+  };
+  tick();
+  clockIntvl = setInterval(tick, 1000);
+}
+
+// ── Map ──────────────────────────────────────────────────────────────────────
+function _syncStyleBtns() {
+  document.querySelectorAll('.map-style-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.style === _currentMapStyle);
+  });
+}
+
+function setMapStyle(styleId) {
+  _currentMapStyle = styleId;
+  if (leafletMap) leafletMap.setStyle(_mapStyle(styleId));
+  if (overlayMap) overlayMap.setStyle(_mapStyle(styleId));
+  _syncStyleBtns();
+}
+
+function initMap(lat, lon) {
+  $('callsign-input').value = '';
+  if (!lat || !lon) return;
+  _currentMapStyle = 'hybrid';
+  if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+  _mapLat = lat; _mapLon = lon;
+  $('map-card').style.display = 'block';
+
+  if (_HAS_MAPTILER && _HAS_WEBGL2) {
+    leafletMap = new maptilersdk.Map({
+      container: 'map',
+      style: _mapStyle(_currentMapStyle),
+      center: [lon, lat],
+      zoom: 8,
+      interactive: false,
+    });
+    new maptilersdk.Marker().setLngLat([lon, lat]).addTo(leafletMap);
+  } else {
+    const lmap = L.map('map', { zoomControl: false, attributionControl: true })
+                  .setView([lat, lon], 8);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(lmap);
+    L.circleMarker([lat, lon], { radius: 8, color: '#00d4aa', fillColor: '#00d4aa',
+                                  fillOpacity: 0.9, weight: 2 }).addTo(lmap);
+    leafletMap = { _lmap: lmap, remove() { lmap.remove(); }, setStyle() {} };
+    document.querySelectorAll('.map-style-btn').forEach(b => b.style.display = 'none');
+  }
+
+  $('map').onclick = e => {
+    if (e.target.closest('.map-style-switcher')) return;
+    openMapOverlay(_mapLat, _mapLon);
+  };
+  _syncStyleBtns();
+}
+
+function openMapOverlay(lat, lon) {
+  const overlay = $('map-overlay');
+  if (!overlay) return;
+  overlay.classList.add('open');
+  if (overlayMap) { overlayMap.remove(); overlayMap = null; }
+  setTimeout(() => {
+    if (_HAS_MAPTILER && _HAS_WEBGL2) {
+      overlayMap = new maptilersdk.Map({
+        container: 'map-expanded',
+        style: _mapStyle(_currentMapStyle),
+        center: [lon, lat],
+        zoom: 10,
+      });
+      new maptilersdk.Marker().setLngLat([lon, lat]).addTo(overlayMap);
+      overlayMap.resize();
+    } else {
+      const lmap = L.map('map-expanded').setView([lat, lon], 10);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+      }).addTo(lmap);
+      L.circleMarker([lat, lon], { radius: 8, color: '#00d4aa', fillColor: '#00d4aa',
+                                    fillOpacity: 0.9, weight: 2 }).addTo(lmap);
+      lmap.invalidateSize();
+      overlayMap = { remove() { lmap.remove(); }, setStyle() {} };
+    }
+    _syncStyleBtns();
+  }, 50);
+}
+
+function closeMapOverlay() {
+  const overlay = $('map-overlay');
+  if (overlay) overlay.classList.remove('open');
+  if (overlayMap) { overlayMap.remove(); overlayMap = null; }
+}
+
+// ── Render: Location ─────────────────────────────────────────────────────────
+function renderQTH(results, derived) {
+  const qrz = results.qrz?.data  || {};
+  const hq  = results.hamqth?.data || {};
+  const cl  = results.callook?.data || {};
+  const cb  = results.clublog?.data || {};
+
+  const city    = firstVal(hq.adr_city, qrz.addr2);
+  const state   = firstVal(qrz.state, hq.us_state);
+  const country = firstVal(qrz.country, hq.country);
+  const zip     = firstVal(qrz.zip, hq.adr_zip);
+  const addr1   = firstVal(qrz.addr1, hq.adr_street1);
+  const grid    = derived.grid;
+  const dxcc    = firstVal(cb.Name, qrz.land, hq.country);
+  const cq      = firstVal(qrz.cqzone, hq.cq, cb.CQZ);
+  const itu     = firstVal(qrz.ituzone, hq.itu, cb.ITU);
+  const cont    = firstVal(hq.continent, cb.Continent);
+  const iota    = hq.iota;
+
+  let html = '';
+  if (city || state) html += kvLarge('City/State', [city, state].filter(Boolean).join(', '));
+  if (addr1)         html += kv('Address', addr1);
+  if (zip)           html += kv('ZIP', zip);
+  if (country)       html += kvLarge('Country', country);
+  if (grid)          html += kvLarge('Grid', grid, 'accent');
+  if (dxcc)          html += kv('DXCC', dxcc);
+  if (cq)            html += kv('CQ Zone', cq);
+  if (itu)           html += kv('ITU Zone', itu);
+  if (cont)          html += kv('Continent', cont);
+  if (iota)          html += kv('IOTA', iota);
+  if (derived.lat)   html += kv('Lat/Lon', `${derived.lat.toFixed(4)}, ${derived.lon.toFixed(4)}`);
+
+  $('qth-kv').innerHTML = html || '<span class="na">No location data</span>';
+}
+
+// ── Band-condition helper ─────────────────────────────────────────────────────
+// Returns array of { band, rating } where rating: 2=green, 1=yellow, 0=red
+// distKm: integer km or null; solar: { solarflux, kindex, aindex, ... } or null
+function getBandConditions(distKm, solar) {
+  if (distKm == null) return null;
+
+  // Base ratings by path distance
+  let bands;
+  if (distKm < 500) {
+    bands = [
+      { band: 'VHF/UHF', rating: 2 },
+      { band: '40m',      rating: 1 },
+      { band: '80m',      rating: 1 },
+    ];
+  } else if (distKm < 2000) {
+    bands = [
+      { band: '40m', rating: 2 },
+      { band: '80m', rating: 2 },
+      { band: '20m', rating: 1 },
+    ];
+  } else if (distKm < 8000) {
+    bands = [
+      { band: '20m', rating: 2 },
+      { band: '17m', rating: 2 },
+      { band: '15m', rating: 1 },
+      { band: '40m', rating: 0 },
+    ];
+  } else {
+    bands = [
+      { band: '15m', rating: 2 },
+      { band: '12m', rating: 2 },
+      { band: '10m', rating: 1 },
+      { band: '20m', rating: 1 },
+    ];
+  }
+
+  if (!solar) return bands;
+
+  const k   = parseInt(solar.kindex)    || 0;
+  const sfi = parseInt(solar.solarflux) || 0;
+  const HIGH = new Set(['17m', '15m', '12m', '10m', 'VHF/UHF']);
+
+  // K-index: downgrade all bands
+  const kDown = k >= 7 ? 2 : (k >= 5 ? 1 : 0);
+  if (kDown) bands = bands.map(b => ({ ...b, rating: Math.max(0, b.rating - kDown) }));
+
+  // SFI: affects 17m-and-above only
+  if (sfi < 80) {
+    bands = bands.map(b => HIGH.has(b.band) ? { ...b, rating: 0 } : b);
+  } else if (sfi >= 150) {
+    bands = bands.map(b => HIGH.has(b.band) ? { ...b, rating: Math.min(2, b.rating + 1) } : b);
+  }
+
+  return bands;
+}
+
+// ── Render: DX Path ──────────────────────────────────────────────────────────
+function renderDXPath(payload) {
+  const body    = $('dxpath-body');
+  if (!body) return;
+  $("dxpath-card").style.display = "block";
+  const derived  = payload.derived  || {};
+  const solar    = payload.solar    || null;
+  const distKm   = payload.distance_km ?? derived.distance_km ?? null;
+  const EMOJI    = ['🔴', '🟡', '🟢'];
+
+  let html = '';
+
+  // ── Bearing block ──
+  if (derived.beam_heading != null) {
+    html += `<div style="text-align:center;margin-bottom:14px;">
+      <div style="font-family:'Courier New',monospace;color:var(--accent);font-size:2.4rem;
+        font-weight:700;letter-spacing:2px;">${derived.beam_heading}&#176; ${esc(derived.beam_cardinal || '')}</div>
+      ${derived.my_grid
+        ? `<div style="color:var(--muted);font-size:12px;margin-top:2px;">From ${esc(derived.my_grid)}</div>`
+        : ''}
+      <div style="color:var(--text);font-size:1rem;font-weight:500;margin-top:4px;">
+        ${distKm != null ? distKm.toLocaleString() + ' km' : '&#8212;'}
+      </div>
+    </div>`;
+  } else {
+    html += `<div style="text-align:center;color:var(--muted);margin-bottom:14px;">
+      Grid data unavailable
+    </div>`;
+  }
+
+  html += `<hr style="border:none;border-top:1px solid var(--border);margin:10px 0;">`;
+
+  // ── Solar conditions ──
+  if (solar) {
+    html += `<div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.5px;
+      text-transform:uppercase;margin-bottom:6px;">Solar Conditions</div>
+    <div style="font-size:12px;color:var(--text);margin-bottom:4px;">
+      SFI: <span style="color:var(--accent);font-weight:600;">${esc(solar.solarflux ?? '—')}</span>
+      &#160;&#183;&#160;
+      K: <span style="color:var(--accent);font-weight:600;">${esc(solar.kindex ?? '—')}</span>
+      &#160;&#183;&#160;
+      A: <span style="color:var(--accent);font-weight:600;">${esc(solar.aindex ?? '—')}</span>
+    </div>`;
+    if (solar.xray) {
+      html += `<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">
+        X-ray: ${esc(solar.xray)}</div>`;
+    }
+    html += `<hr style="border:none;border-top:1px solid var(--border);margin:10px 0;">`;
+  }
+
+  // ── Band conditions ──
+  html += `<div style="display:flex;justify-content:space-between;align-items:baseline;
+    margin-bottom:8px;">
+    <span style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.5px;
+      text-transform:uppercase;">Estimated Conditions</span>
+    <span style="font-size:10px;color:var(--muted);">(not a forecast)</span>
+  </div>`;
+
+  const bands = getBandConditions(distKm, solar);
+  if (!bands) {
+    html += `<div style="color:var(--muted);font-size:12px;">Grid data unavailable</div>`;
+  } else {
+    html += bands.map(b =>
+      `<div style="display:flex;justify-content:space-between;align-items:center;
+        padding:3px 0;border-bottom:1px solid rgba(42,45,53,.6);">
+        <span style="font-size:12px;color:var(--text);">${esc(b.band)}</span>
+        <span style="font-size:13px;">${EMOJI[b.rating]}</span>
+      </div>`
+    ).join('');
+  }
+
+  body.innerHTML = html;
+}
+
+// ── Render: Portable Operations (POTA / SOTA) ────────────────────────────────
+function renderPortableOps(payload) {
+  const card = $('portable-ops-card');
+  if (!card) return;
+  const po = payload.portable_ops;
+  if (!po) { card.style.display = 'none'; return; }
+
+  const { pota_activator, pota_hunter, pota_spot, sota_activator, sota_chaser } = po;
+  const hasPota = !!(pota_activator || pota_hunter);
+  const hasSota = !!(sota_activator || sota_chaser);
+  if (!hasPota && !hasSota && !pota_spot) { card.style.display = 'none'; return; }
+
+  const cs = esc(payload.callsign);
+  let html = '';
+
+  // Live spot badge
+  if (pota_spot) {
+    html += `<div style="background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.3);
+      border-radius:var(--radius);padding:8px 12px;margin-bottom:12px;font-size:12px;
+      color:var(--accent);">
+      &#x1F7E2; Currently active at <strong>${esc(pota_spot.reference || '')}</strong>
+      &#8212; ${esc(pota_spot.name || '')}
+      ${pota_spot.frequency ? ' &#183; ' + esc(String(pota_spot.frequency)) : ''}
+      ${pota_spot.mode      ? ' &#183; ' + esc(pota_spot.mode)              : ''}
+    </div>`;
+  }
+
+  // POTA section
+  if (hasPota) {
+    html += `<div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.5px;
+      text-transform:uppercase;margin-bottom:8px;">POTA</div>`;
+    if (pota_activator) {
+      const a = pota_activator;
+      html += `<div style="font-size:12px;color:var(--text);margin-bottom:4px;">
+        Activations: <span style="color:var(--accent);font-weight:600;">${esc(String(a.activations ?? '—'))}</span>
+        &#160;&#183;&#160;
+        Parks: <span style="color:var(--accent);font-weight:600;">${esc(String(a.parks ?? '—'))}</span>
+        &#160;&#183;&#160;
+        QSOs: <span style="color:var(--accent);font-weight:600;">${esc(String(a.qsos ?? '—'))}</span>
+        <a href="https://pota.app/#/profile/${cs}" target="_blank" rel="noopener"
+          style="margin-left:8px;font-size:11px;color:var(--accent);">pota.app profile &#8594;</a>
+      </div>`;
+    }
+    if (pota_hunter) {
+      const h = pota_hunter;
+      html += `<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">
+        Parks hunted: <span style="color:var(--text);font-weight:600;">${esc(String(h.parks_hunted ?? '—'))}</span>
+        ${h.qsos != null
+          ? ' &#183; QSOs: <span style="color:var(--text);font-weight:600;">' + esc(String(h.qsos)) + '</span>'
+          : ''}
+      </div>`;
+    }
+  }
+
+  // SOTA section
+  if (hasSota) {
+    if (hasPota) html += `<hr style="border:none;border-top:1px solid var(--border);margin:8px 0;">`;
+    html += `<div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.5px;
+      text-transform:uppercase;margin-bottom:8px;">SOTA</div>`;
+    if (sota_activator) {
+      const a = sota_activator;
+      html += `<div style="font-size:12px;color:var(--text);margin-bottom:4px;">
+        Activations: <span style="color:var(--accent);font-weight:600;">${esc(String(a.activations ?? '—'))}</span>
+        &#160;&#183;&#160;
+        Summits: <span style="color:var(--accent);font-weight:600;">${esc(String(a.summits ?? '—'))}</span>
+        &#160;&#183;&#160;
+        Points: <span style="color:var(--accent);font-weight:600;">${esc(String(a.points ?? '—'))}</span>
+        <a href="https://www.sota.org.uk/operator/${cs}" target="_blank" rel="noopener"
+          style="margin-left:8px;font-size:11px;color:var(--accent);">sota.org profile &#8594;</a>
+      </div>`;
+    }
+    if (sota_chaser) {
+      const c = sota_chaser;
+      html += `<div style="font-size:12px;color:var(--muted);">
+        Chases: <span style="color:var(--text);font-weight:600;">${esc(String(c.chases ?? '—'))}</span>
+        ${c.summits_chased != null
+          ? ' &#183; Summits: <span style="color:var(--text);font-weight:600;">' + esc(String(c.summits_chased)) + '</span>'
+          : ''}
+      </div>`;
+    }
+  }
+
+  $('portable-ops-body').innerHTML = html;
+  card.style.display = 'block';
+}
+
+// ── Render: Weather ──────────────────────────────────────────────────────────
+function renderWeather(results) {
+  const w = results.weather;
+  if (w?.status !== 'ok') { $('weather-card').classList.add('hidden'); return; }
+  const d = w.data;
+  $('wx-icon').innerHTML        = weatherIcon(d.weathercode ?? -1);
+  $('wx-condition').textContent = d.description || '—';
+  $('wx-temp').textContent = d.temperature != null ? `${d.temperature} °F` : '';
+  let html = '';
+  html += kv('Wind', d.windspeed != null ? `${d.windspeed} km/h ${d.wind_cardinal}` : null);
+  html += kv('Direction', d.winddirection != null ? `${d.winddirection}°` : null);
+  html += kv('Observed', d.time);
+  $('weather-kv').innerHTML = html;
+}
+
+// ── Render: Photos ───────────────────────────────────────────────────────────
+function renderPhotos(results, callsign) {
+  const qrz_img    = results.qrz?.data?.image;
+  const bio_images = results.qrz?.data?.bio_images || [];
+  const hq_img     = results.hamqth?.data?.picture;
+  const cs         = esc(callsign);
+
+  const seen = new Set();
+  const imgs = [];
+  if (qrz_img) { seen.add(qrz_img); imgs.push({ src: qrz_img, source: 'qrz' }); }
+  for (const src of bio_images) {
+    if (!seen.has(src)) { seen.add(src); imgs.push({ src, source: 'qrz' }); }
+  }
+  if (hq_img && !seen.has(hq_img)) { imgs.push({ src: hq_img, source: 'hamqth' }); }
+
+  const PROFILE = {
+    qrz:    { label: 'QRZ.com profile →',   href: `https://www.qrz.com/db/${cs}` },
+    hamqth: { label: 'HamQTH profile →',    href: `https://www.hamqth.com/${cs}` },
+  };
+
+  let html = '';
+  if (imgs.length) {
+    html = imgs.map(({ src, source }) => {
+      const p = PROFILE[source];
+      return `<div class="photo-block">
+        <img src="${esc(src)}" alt="photo"
+             onerror="this.parentNode.style.display='none'">
+        <div class="photo-src">
+          <a href="${p.href}" target="_blank" rel="noopener">${p.label}</a>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    const initials = callsign.replace(/[^A-Z]/g, '').slice(0, 2) || '??';
+    html = `<div class="photo-placeholder">${esc(initials)}</div>`;
+  }
+  $('photos-block').innerHTML = html;
+}
+
+// ── Issuing authority lookup ──────────────────────────────────────────────────
+function issuingAuthority(country) {
+  const map = {
+    'United States':'FCC (United States)', 'Australia':'ACMA (Australia)',
+    'United Kingdom':'Ofcom (United Kingdom)', 'Canada':'ISED (Canada)',
+    'Germany':'BNetzA (Germany)', 'Japan':'MIC (Japan)',
+    'France':'ANFR (France)', 'Italy':'MISE (Italy)',
+    'Spain':'CNAF (Spain)', 'Netherlands':'Agentschap Telecom (Netherlands)',
+    'Brazil':'ANATEL (Brazil)', 'Russia':'Roskomnadzor (Russia)',
+    'China':'MIIT (China)', 'India':'WPC (India)',
+    'New Zealand':'RSM (New Zealand)', 'South Africa':'ICASA (South Africa)',
+    'Argentina':'ENACOM (Argentina)', 'Mexico':'IFT (Mexico)',
+    'Sweden':'PTS (Sweden)', 'Finland':'Traficom (Finland)',
+    'Norway':'Nkom (Norway)', 'Denmark':'Erhvervsstyrelsen (Denmark)',
+    'Belgium':'BIPT (Belgium)', 'Switzerland':'BAKOM (Switzerland)',
+    'Austria':'RTR (Austria)', 'Poland':'UKE (Poland)',
+    'Czech Republic':'CTU (Czech Republic)', 'Portugal':'ANACOM (Portugal)',
+    'Greece':'EETT (Greece)', 'Turkey':'BTK (Turkey)',
+    'Israel':'MOC (Israel)', 'South Korea':'KCA (South Korea)',
+    'Taiwan':'NCC (Taiwan)', 'Indonesia':'Kominfo (Indonesia)',
+    'Philippines':'NTC (Philippines)', 'Thailand':'NBTC (Thailand)',
+    'Malaysia':'MCMC (Malaysia)', 'Singapore':'IMDA (Singapore)',
+    'Hong Kong':'OFCA (Hong Kong)',
+  };
+  if (!country) return null;
+  return map[country] || `${country} (regulatory authority)`;
+}
+
+// ── Render: License ──────────────────────────────────────────────────────────
+function renderLicense(results) {
+  const qrz = results.qrz?.data  || {};
+  const cl  = results.callook?.data || {};
+  const hq  = results.hamqth?.data || {};
+  const hd  = results.hamdb?.data  || {};
+
+  // HamDB license status — displayed as first row
+  let statusHtml = '';
+  if (hd.status) {
+    const key   = String(hd.status)[0]?.toUpperCase();
+    const label = { A: 'Active', E: 'Expired', C: 'Cancelled' }[key] || hd.status;
+    const color = { A: 'var(--accent)', E: 'var(--warn)', C: 'var(--danger)' }[key] || 'var(--muted)';
+    statusHtml = `<div class="kv-row">
+      <span class="kv-label">Status</span>
+      <span class="kv-value" style="color:${color};font-weight:600;">${esc(label)}</span>
+    </div>`;
+  }
+
+  const name = firstVal(
+    (qrz.fname || qrz.name) ? `${qrz.fname || ''} ${qrz.name || ''}`.trim() : null,
+    hq.adr_name, cl.name
+  );
+  const cls     = expandClass(firstVal(qrz.class, cl.current?.operClass));
+  const efdate  = firstVal(qrz.efdate,  cl.otherInfo?.grantDate);
+  const expdate = firstVal(qrz.expdate, cl.otherInfo?.expiryDate);
+  const prev    = firstVal(qrz.prev_call, cl.otherInfo?.previousCallsign);
+  const aliases = qrz.aliases;
+  const born    = qrz.born;
+  const country = firstVal(qrz.country, hq.country, hd.country);
+  const authority = issuingAuthority(country);
+
+  let html = statusHtml;
+  if (name)      html += kv('Name',       name);
+  if (cls)       html += kv('Class',      cls, 'accent');
+  if (authority) html += kv('Issued By',  authority);
+  if (efdate)    html += kv('Grant Date', efdate);
+  if (expdate)   html += kv('Expiry',     expdate, 'warn');
+  if (prev)      html += kv('Prev Call',  prev);
+  if (aliases)   html += kv('Aliases',    aliases);
+  if (born)      html += kv('Born',       born);
+
+  $('license-kv').innerHTML = html || '<span class="na">No license data</span>';
+}
+
+// ── Render: Digital flags ────────────────────────────────────────────────────
+function renderFlags(results, callsign, social = {}) {
+  const qrz = results.qrz?.data  || {};
+  const hq  = results.hamqth?.data || {};
+
+  const lotw  = firstVal(qrz.lotw, hq.lotw);
+  const eqsl  = firstVal(qrz.eqsl, hq.eqsl);
+  const mqsl  = qrz.mqsl;
+  const mgr   = firstVal(qrz.manager, hq.qsl_via);
+  const email = firstVal(qrz.email, hq.email);
+  const web   = qrz.url || null;   // QRZ only; HamQTH web appears in Social section
+  const nick  = hq.nick;
+  const cs    = esc(callsign);
+
+  const isYes = v => v && (v === '1' || v.toUpperCase() === 'Y' || v.toUpperCase() === 'YES');
+
+  // LoTW and eQSL: plain badge only — their URLs require login or specific params
+  const lotwVal = isYes(lotw) ? badge('Yes', 'badge-green')
+    : (lotw ? badge('No', 'badge-grey') : '<span class="na">Unknown</span>');
+
+  const eqslVal = isYes(eqsl) ? badge('Yes', 'badge-green')
+    : (eqsl ? badge('No', 'badge-grey') : '<span class="na">Unknown</span>');
+
+  const mqslVal = isYes(mqsl) ? badge('Yes', 'badge-green')
+    : (mqsl ? badge('No', 'badge-grey') : '<span class="na">Unknown</span>');
+
+  let html = `
+    <div class="kv-row"><span class="kv-label">LoTW</span><span class="kv-value">${lotwVal}</span></div>
+    <div class="kv-row"><span class="kv-label">eQSL</span><span class="kv-value">${eqslVal}</span></div>
+    <div class="kv-row"><span class="kv-label">Paper QSL</span><span class="kv-value">${mqslVal}</span></div>
+    <div class="kv-row"><span class="kv-label">QRZ.com</span><span class="kv-value">
+      <a href="https://www.qrz.com/db/${cs}" target="_blank" rel="noopener" style="font-size:13px;">qrz.com/db/${cs} →</a>
+    </span></div>
+    <div class="kv-row"><span class="kv-label">HamQTH</span><span class="kv-value">
+      <a href="https://www.hamqth.com/${cs}" target="_blank" rel="noopener" style="font-size:13px;">hamqth.com/${cs} →</a>
+    </span></div>
+  `;
+  if (mgr)   html += kv('QSL via',  mgr);
+  if (email) html += `<div class="kv-row"><span class="kv-label">Email</span><span class="kv-value">
+    <a href="mailto:${esc(email)}">${esc(email)}</a></span></div>`;
+  if (nick)  html += kv('Nickname', nick);
+
+  html += `<div class="kv-row"><span class="kv-label">QRZCQ</span><span class="kv-value">
+    <a href="https://www.qrzcq.com/call/${cs}" target="_blank" rel="noopener" style="font-size:13px;">qrzcq.com/call/${cs} →</a>
+  </span></div>`;
+  html += `<div class="kv-row"><span class="kv-label">HamDB</span><span class="kv-value">
+    <a href="https://hamdb.org/${cs}" target="_blank" rel="noopener" style="font-size:13px;">hamdb.org/${cs} →</a>
+  </span></div>`;
+
+  $('flags-kv').innerHTML = html;
+}
+
+// ── Social platform icon SVGs ────────────────────────────────────────────────
+const SOCIAL_ICONS = {
+  web:      c => `<svg width="22" height="22" viewBox="0 0 32 32" fill="none" stroke="${c}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="9"/><path d="M16,7 C18.5,10 20,13 20,16 C20,19 18.5,22 16,25"/><path d="M16,7 C13.5,10 12,13 12,16 C12,19 13.5,22 16,25"/><line x1="7" y1="16" x2="25" y2="16"/></svg>`,
+  twitter:  c => `<svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M5,7 L13,7 L17,13 L21,7 L27,7 L21,16.5 L27.5,25 L19.5,25 L16,19 L12.5,25 L4.5,25 L11,16.5 Z" fill="${c}"/></svg>`,
+  facebook: c => `<svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M20,8 L17.5,8 Q13,8 13,13 L13,16 L10,16 L10,19.5 L13,19.5 L13,26 L17,26 L17,19.5 L19.5,19.5 L20.5,16 L17,16 L17,13.5 Q17,12 18.5,12 L20,12 Z" fill="${c}"/></svg>`,
+  linkedin: c => `<svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="7" y="14" width="3.5" height="10" rx="0.5" fill="${c}"/><circle cx="8.75" cy="11" r="1.75" fill="${c}"/><path d="M14,14 L17,14 Q21,14 21,18 L21,24 L17.5,24 L17.5,18.5 Q17.5,17.5 16.5,17.5 L15.5,17.5 Q14.5,17.5 14.5,18.5 L14.5,24 L11,24 L11,14 Z" fill="${c}"/></svg>`,
+  youtube:  c => `<svg width="22" height="22" viewBox="0 0 32 32" fill="none" stroke="${c}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="11" width="22" height="12" rx="3"/><polygon points="13.5,14.5 21,17 13.5,19.5" fill="${c}" stroke="none"/></svg>`,
+  skype:    c => `<svg width="22" height="22" viewBox="0 0 32 32" fill="none" stroke="${c}" stroke-width="1.6" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="8.5"/><path d="M13,13.5 C13,11.8 14.2,11 15.8,11 C17.4,11 18.8,12 18.8,13.5 C18.8,15.2 17.2,15.8 16,16.3 C14.3,16.9 13.2,17.8 13.2,19.2 C13.2,20.5 14.5,21 16,21 C17.5,21 18.8,20.5 18.8,19.3"/></svg>`,
+};
+
+// ── Render: Social icons row ──────────────────────────────────────────────────
+function renderSocialIcons(social) {
+  const row = $('social-icons-row');
+  if (!row) return;
+
+  const ACTIVE   = '#00d4aa';
+  const INACTIVE = '#6b7280';
+
+  const PLATFORMS = [
+    { key: 'web',      label: 'Website'   },
+    { key: 'twitter',  label: 'X/Twitter' },
+    { key: 'facebook', label: 'Facebook'  },
+    { key: 'linkedin', label: 'LinkedIn'  },
+    { key: 'youtube',  label: 'YouTube'   },
+    { key: 'skype',    label: 'Skype'     },
+  ];
+
+  const icons = PLATFORMS.map(({ key, label }) => {
+    const value   = social[key];
+    const color  = value ? ACTIVE : INACTIVE;
+    const bg     = value ? 'rgba(0,212,170,0.08)' : '#2a2d35';
+    const border = value ? '1px solid rgba(0,212,170,0.4)' : '1px solid #3a3d47';
+    const svg    = SOCIAL_ICONS[key](color);
+
+    let href = null;
+    if (value) {
+      if      (key === 'web')      href = value.startsWith('http') ? value : `https://${value}`;
+      else if (key === 'twitter')  href = value.startsWith('http') ? value : `https://x.com/${value.replace(/^@/, '')}`;
+      else if (key === 'skype')    href = null;
+      else                         href = value;
+    }
+
+    const titleAttr = `title="${esc(label)}${value ? ': ' + esc(value) : ''}"`;
+    const inner = href
+      ? `<a href="${esc(href)}" target="_blank" rel="noopener" ${titleAttr}>${svg}</a>`
+      : `<span ${titleAttr}>${svg}</span>`;
+
+    return `<div style="display:inline-flex;align-items:center;justify-content:center;
+      width:36px;height:36px;border-radius:50%;background:${bg};border:${border};
+      flex-shrink:0;">${inner}</div>`;
+  }).join('');
+
+  row.innerHTML = `<div style="display:flex;justify-content:center;gap:10px;padding:8px 0;">${icons}</div>`;
+  row.style.display = 'block';
+}
+
+// ── Render: Digital Voice (AllStarLink) ─────────────────────────────────────
+function renderDigitalVoice(results, callsign) {
+  const asl = results.allstarlink;
+  const body = $('dv-body');
+
+  let html = '';
+
+  // AllStarLink section
+  html += `<div class="asl-section-title">AllStarLink</div>`;
+
+  if (!asl || asl.status === 'error') {
+    html += `<p class="na" style="margin-bottom:12px;">
+      ${asl?.status === 'error' ? 'Unavailable' : 'No data'}
+    </p>`;
+  } else if (asl.status === 'not_found' || !asl.data?.length) {
+    html += `<p class="na" style="margin-bottom:12px;">No AllStarLink nodes registered</p>`;
+  } else {
+    const nodes = asl.data;
+    html += nodes.map(n => {
+      const nid   = esc(n.node_id || n.node || n.id || '?');
+      const desc  = esc(n.description || n.location || n.city || '');
+      const freq  = n.frequency ? esc(n.frequency) : null;
+      const online = n.online !== false; // default to true if unknown
+      const dot = `<span class="dot ${online ? 'dot-on' : 'dot-off'}"></span>`;
+      const status = online
+        ? `<span style="color:var(--accent);font-size:12px;font-weight:600;">${dot}Online</span>`
+        : `<span style="color:var(--muted);font-size:12px;">${dot}Offline</span>`;
+      return `<div class="asl-node">
+        <div>
+          <div class="asl-node-num">Node ${nid}</div>
+          ${desc ? `<div class="asl-node-desc">${desc}</div>` : ''}
+          ${freq ? `<div class="asl-node-desc">${freq}</div>` : ''}
+        </div>
+        <div>${status}</div>
+      </div>`;
+    }).join('');
+    html += `<div style="margin-bottom:12px;"></div>`;
+  }
+
+  body.innerHTML = html;
+}
+
+// ── Render: PSK Reporter ─────────────────────────────────────────────────────
+function renderPSK(results) {
+  const psk  = results.pskreporter;
+  const body = $('psk-body');
+  const note = `<p class="psk-note">Spots are reported by receiving stations — mode shown is
+    what was decoded, not necessarily what you transmitted.</p>`;
+
+  if (psk?.status !== 'ok' || !psk.data?.length) {
+    body.innerHTML = note + '<span class="na">No spots in last hour</span>';
+    return;
+  }
+
+  const rows = psk.data.slice(0, 10).map(r => {
+    const freq    = r.frequency ? (r.frequency / 1000).toFixed(1) + ' kHz' : '—';
+    const mode    = esc(r.mode || '—');
+    const time    = r.flowStartSeconds ? (() => {
+      const d = new Date(r.flowStartSeconds * 1000);
+      const day  = String(d.getUTCDate()).padStart(2, '0');
+      const mon  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()];
+      const year = d.getUTCFullYear();
+      const hhmm = String(d.getUTCHours()).padStart(2,'0') + String(d.getUTCMinutes()).padStart(2,'0');
+      return `${day} ${mon} ${year} ${hhmm}z`;
+    })() : '—';
+    const spotter = esc(r.receiverCallsign || '—');
+    return `<tr><td>${freq}</td><td>${mode}</td><td>${time}</td><td>${spotter}</td></tr>`;
+  }).join('');
+
+  body.innerHTML = `${note}
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Freq</th><th>Mode</th><th>Time</th><th>Spotter</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div style="color:var(--muted);font-size:11px;margin-top:8px;">
+      ${psk.data.length} spot(s)
+    </div>`;
+}
+
+// ── Render: Wavelog ──────────────────────────────────────────────────────────
+function renderWavelog(results, qsos = [], notableInfo = null) {
+  const wl          = results.wavelog;
+  const stats       = results.wavelog_stats;
+  const body        = $('wavelog-body');
+  $("wavelog-card").style.display = "block";
+  const isSpecial   = notableInfo?.entry_type === 'special';
+  const isPrevNot   = !!(notableInfo?.notable && notableInfo?.is_current_holder === false);
+
+  // Not configured — early return; previous-notable note not relevant here
+  if (wl?.status === 'not_configured') {
+    body.innerHTML = '<span class="na">Wavelog not configured (set WAVELOG_URL + WAVELOG_KEY)</span>';
+    return;
+  }
+
+  let html = '';
+
+  if (!wl || wl.status !== 'ok') {
+    html = isSpecial
+      ? '<span class="na">Historic or institutional station &#8212; Wavelog log check not applicable</span>'
+      : `<div style="font-size:0.95rem;font-weight:500;color:#6b7280;margin-bottom:8px;">${antennaIcon('#6b7280')}Not in Log</div>`;
+  } else {
+    const d = wl.data;
+    if (d.call_worked) {
+      if (qsos.length) {
+        html += `<div style="font-size:1rem;font-weight:600;color:var(--accent);margin-bottom:8px;">${antennaIcon('#00d4aa')}${qsos.length} QSO${qsos.length !== 1 ? 's' : ''} on record</div>`;
+        const rows = qsos.slice(0, 5).map(q => {
+          const dateStr = q.date.length === 8
+            ? `${q.date.slice(0,4)}-${q.date.slice(4,6)}-${q.date.slice(6,8)}`
+            : q.date;
+          return `<tr>
+            <td>${esc(dateStr)}</td>
+            <td>${esc(q.band)}</td>
+            <td>${esc(q.mode)}</td>
+          </tr>`;
+        }).join('');
+        html += `<div class="qso-scroll" style="max-height:180px;">
+          <table class="data-table">
+            <thead><tr><th>Date</th><th>Band</th><th>Mode</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+      }
+      if (window.WAVELOG_URL) {
+        html += `<div style="margin-top:10px;">
+          <a class="echolink-link" href="${esc(window.WAVELOG_URL)}"
+             target="_blank" rel="noopener">View full log &#8594;</a>
+        </div>`;
+      }
+    } else {
+      if (isSpecial) {
+        html += '<span class="na">Historic or institutional station &#8212; Wavelog log check not applicable</span>';
+      } else {
+        html += `<div style="font-size:0.95rem;font-weight:500;color:#6b7280;margin-bottom:8px;">${antennaIcon('#6b7280')}Not in Log</div>`;
+        const totalQsos = stats?.data?.total_qsos || stats?.data?.Total;
+        if (totalQsos) {
+          html += `<p style="color:var(--muted);font-size:12px;margin-top:8px;">Total log: ${esc(String(totalQsos))} QSOs</p>`;
+        }
+      }
+    }
+  }
+
+  // Previous notable holder note (only when not the current holder)
+  if (isPrevNot) {
+    const pIcon    = notableInfo.icon || '&#11088;';
+    const pName    = notableInfo.known_as || notableInfo.name || '';
+    const pProf    = notableInfo.profession || '';
+    html += `<div style="margin-top:8px;font-size:0.8rem;color:#8b909a;
+      border-top:1px solid #2a2d35;padding-top:8px;">
+      Previously held by
+      <span style="color:#f59e0b">${esc(pIcon)} ${esc(pName)}</span>${pProf ? ' &#8212; ' + esc(pProf) : ''}
+    </div>`;
+  }
+
+  if (window.WAVELOG_URL) {
+    html += `<div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px;">
+      <button id="log-qso-toggle-btn" onclick="toggleLogQSOForm()"
+        style="background:var(--accent);color:#0a1a15;border:none;font-family:inherit;
+          font-size:12px;font-weight:600;padding:6px 16px;border-radius:var(--radius);
+          cursor:pointer;transition:opacity .15s;"
+        onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        Log QSO
+      </button>
+      <span id="log-qso-status" style="display:none;font-size:12px;margin-left:10px;"></span>
+      <div id="log-qso-form" style="display:none;margin-top:10px;">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;margin-bottom:6px;">
+          <div>
+            <div style="color:var(--muted);font-size:10px;margin-bottom:3px;letter-spacing:.5px;text-transform:uppercase;">Band</div>
+            <select id="log-qso-band" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:12px;padding:4px 6px;border-radius:5px;cursor:pointer;">
+              <option>160m</option><option>80m</option><option>60m</option><option selected>40m</option>
+              <option>30m</option><option>20m</option><option>17m</option><option>15m</option>
+              <option>12m</option><option>10m</option><option>6m</option><option>2m</option><option>70cm</option>
+            </select>
+          </div>
+          <div>
+            <div style="color:var(--muted);font-size:10px;margin-bottom:3px;letter-spacing:.5px;text-transform:uppercase;">Mode</div>
+            <select id="log-qso-mode" onchange="onLogQSOMode()" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:12px;padding:4px 6px;border-radius:5px;cursor:pointer;">
+              <option>SSB</option><option>CW</option><option>FM</option><option>AM</option>
+              <option>FT8</option><option>FT4</option><option>JS8</option><option>DIGITAL</option>
+            </select>
+          </div>
+          <div>
+            <div style="color:var(--muted);font-size:10px;margin-bottom:3px;letter-spacing:.5px;text-transform:uppercase;">Date / Time UTC</div>
+            <input id="log-qso-dt" type="datetime-local"
+              style="background:var(--bg);border:1px solid var(--border);color:var(--text);
+                font-family:inherit;font-size:12px;padding:4px 6px;border-radius:5px;width:170px;">
+          </div>
+          <div>
+            <div style="color:var(--muted);font-size:10px;margin-bottom:3px;letter-spacing:.5px;text-transform:uppercase;">RST S</div>
+            <input id="log-qso-rst-s" type="text" value="59" maxlength="3"
+              style="background:var(--bg);border:1px solid var(--border);color:var(--text);
+                font-family:inherit;font-size:12px;padding:4px 6px;border-radius:5px;
+                width:44px;text-align:center;">
+          </div>
+          <div>
+            <div style="color:var(--muted);font-size:10px;margin-bottom:3px;letter-spacing:.5px;text-transform:uppercase;">RST R</div>
+            <input id="log-qso-rst-r" type="text" value="59" maxlength="3"
+              style="background:var(--bg);border:1px solid var(--border);color:var(--text);
+                font-family:inherit;font-size:12px;padding:4px 6px;border-radius:5px;
+                width:44px;text-align:center;">
+          </div>
+          <div>
+            <div style="color:var(--muted);font-size:10px;margin-bottom:3px;letter-spacing:.5px;text-transform:uppercase;">Freq (MHz)</div>
+            <input id="log-qso-freq" type="text" maxlength="12" placeholder="e.g. 14.225"
+              style="background:var(--bg);border:1px solid var(--border);color:var(--text);
+                font-family:inherit;font-size:12px;padding:4px 6px;border-radius:5px;width:72px;">
+          </div>
+          <div>
+            <div style="color:var(--muted);font-size:10px;margin-bottom:3px;letter-spacing:.5px;text-transform:uppercase;">Submode</div>
+            <input id="log-qso-submode" type="text" maxlength="10" placeholder="e.g. USB"
+              style="background:var(--bg);border:1px solid var(--border);color:var(--text);
+                font-family:inherit;font-size:12px;padding:4px 6px;border-radius:5px;width:60px;">
+          </div>
+          <div>
+            <div style="color:var(--muted);font-size:10px;margin-bottom:3px;letter-spacing:.5px;text-transform:uppercase;">TX Pwr (W)</div>
+            <input id="log-qso-txpwr" type="text" maxlength="8" placeholder="Watts"
+              style="background:var(--bg);border:1px solid var(--border);color:var(--text);
+                font-family:inherit;font-size:12px;padding:4px 6px;border-radius:5px;width:54px;">
+          </div>
+          <div style="flex-basis:100%;margin-top:2px;">
+            <div style="color:var(--muted);font-size:10px;margin-bottom:3px;letter-spacing:.5px;text-transform:uppercase;">Comment</div>
+            <input id="log-qso-comment" type="text" maxlength="200" placeholder="optional"
+              style="background:var(--bg);border:1px solid var(--border);color:var(--text);
+                font-family:inherit;font-size:12px;padding:4px 6px;border-radius:5px;width:100%;">
+          </div>
+          <div style="flex-basis:100%;margin-top:2px;">
+            <div style="color:var(--muted);font-size:10px;margin-bottom:3px;letter-spacing:.5px;text-transform:uppercase;">Notes (private)</div>
+            <input id="log-qso-notes" type="text" maxlength="200" placeholder="optional"
+              style="background:var(--bg);border:1px solid var(--border);color:var(--text);
+                font-family:inherit;font-size:12px;padding:4px 6px;border-radius:5px;width:100%;">
+          </div>
+          <div id="log-qso-debug" style="flex-basis:100%;margin-top:4px;font-size:10px;
+            color:var(--muted);font-family:monospace;white-space:pre-wrap;word-break:break-all;"></div>
+          <button id="log-qso-submit-btn" onclick="submitLogQSO()"
+            style="background:var(--card);border:1px solid var(--accent);color:var(--accent);
+              font-family:inherit;font-size:12px;font-weight:600;padding:6px 14px;
+              border-radius:var(--radius);cursor:pointer;transition:opacity .15s;white-space:nowrap;"
+            onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  body.innerHTML = html;
+}
+
+// ── Log QSO form helpers ─────────────────────────────────────────────────────
+function _utcDatetimeLocal() {
+  const n = new Date();
+  const pad = x => String(x).padStart(2, '0');
+  return `${n.getUTCFullYear()}-${pad(n.getUTCMonth()+1)}-${pad(n.getUTCDate())}T${pad(n.getUTCHours())}:${pad(n.getUTCMinutes())}`;
+}
+
+function toggleLogQSOForm() {
+  const form = $('log-qso-form');
+  if (!form) return;
+  const showing = form.style.display !== 'none';
+  if (!showing) {
+    const dtEl = $('log-qso-dt');
+    if (dtEl) dtEl.value = _utcDatetimeLocal();
+    _logQsoStatus('', '');
+    const btn = $('log-qso-submit-btn');
+    if (btn) btn.disabled = false;
+    const dbg = $('log-qso-debug');
+    if (dbg) {
+      const _ld = _currentLookupData || {};
+      const _r  = _ld.results  || {};
+      const _d  = _ld.derived  || {};
+      const _qrz = _r.qrz?.data    || {};
+      const _hq  = _r.hamqth?.data || {};
+      const _cb  = _r.clublog?.data || {};
+      dbg.textContent = [
+        `CONT: ${_hq.continent  || _cb.Continent || '—'}`,
+        `DXCC: ${_cb.DXCC      ?? '—'}`,
+        `CQZ:  ${_qrz.cqzone   || _cb['CQ Zone'] || '—'}`,
+        `ITUZ: ${_qrz.ituzone  || '—'}`,
+        `LAT:  ${_d.lat        ?? '—'}`,
+        `LON:  ${_d.lon        ?? '—'}`,
+      ].join('  |  ');
+    }
+  }
+  form.style.display = showing ? 'none' : 'block';
+}
+
+function onLogQSOMode() {
+  const mode = $('log-qso-mode')?.value || 'SSB';
+  const PHONE = new Set(['SSB', 'FM', 'AM', 'DV', 'PHONE']);
+  const def = PHONE.has(mode) ? '59' : '599';
+  const s = $('log-qso-rst-s');
+  const r = $('log-qso-rst-r');
+  if (s && (s.value === '59' || s.value === '599')) s.value = def;
+  if (r && (r.value === '59' || r.value === '599')) r.value = def;
+}
+
+function _logQsoStatus(msg, type) {
+  const el = $('log-qso-status');
+  if (!el) return;
+  if (!msg) { el.style.display = 'none'; el.textContent = ''; return; }
+  el.textContent = msg;
+  el.style.color = type === 'ok' ? 'var(--accent)' : type === 'error' ? 'var(--danger)' : 'var(--muted)';
+  el.style.display = 'inline';
+}
+
+async function submitLogQSO() {
+  console.log('[HamLookup] _currentLookupData:', _currentLookupData);
+  const dtVal = ($('log-qso-dt')?.value || '').trim();
+  if (!dtVal) { _logQsoStatus('Date/time required', 'error'); return; }
+  const [date, time] = dtVal.split('T');
+  const dateStr = date.replace(/-/g, '');
+  const timeStr = time.replace(/:/g, '').padEnd(6, '0').slice(0, 6);
+
+  const _ld  = _currentLookupData || {};
+  const _r   = _ld.results  || {};
+  const _d   = _ld.derived  || {};
+  const _qrz = _r.qrz?.data    || {};
+  const _hq  = _r.hamqth?.data || {};
+  const _cb  = _r.clublog?.data || {};
+
+  const payload = {
+    callsign:    _currentCallsign,
+    band:        $('log-qso-band')?.value,
+    mode:        $('log-qso-mode')?.value,
+    datetime_on: `${dateStr} ${timeStr}`,
+    rst_sent:    ($('log-qso-rst-s')?.value    || '').trim(),
+    rst_rcvd:    ($('log-qso-rst-r')?.value    || '').trim(),
+    freq:        ($('log-qso-freq')?.value      || '').trim(),
+    submode:     ($('log-qso-submode')?.value   || '').trim(),
+    tx_pwr:      ($('log-qso-txpwr')?.value     || '').trim(),
+    comment:     ($('log-qso-comment')?.value   || '').trim(),
+    notes:       ($('log-qso-notes')?.value     || '').trim(),
+    name:        (_r.wavelog?.data?.name || _ld.current_holder_name || '').trim(),
+    gridsquare:  (_d.grid                || '').trim(),
+    country:     (_qrz.country   || _hq.country   || '').trim(),
+    state:       (_qrz.state     || _hq.us_state  || '').trim(),
+    cnty:        (_qrz.county    || '').trim(),
+    qth:         (_qrz.addr2     || _hq.adr_city  || '').trim(),
+    cont:        (_cb.Continent  || _hq.continent || '').trim(),
+    dxcc:        (_cb.DXCC != null ? String(_cb.DXCC) : ''),
+    cqz:         String(_qrz.cqzone  || _cb['CQ Zone'] || '').trim(),
+    ituz:        String(_qrz.ituzone || '').trim(),
+    iota:        (_hq.iota || '').trim(),
+    lat:         (_d.lat  != null ? String(_d.lat)  : ''),
+    lon:         (_d.lon  != null ? String(_d.lon)  : ''),
+    distance:    ((_d.distance_km ?? _ld.distance_km) != null
+                    ? String(Math.round(_d.distance_km ?? _ld.distance_km)) : ''),
+  };
+
+  const btn = $('log-qso-submit-btn');
+  if (btn) btn.disabled = true;
+  _logQsoStatus('Logging…', 'pending');
+
+  try {
+    const res = await fetch('/log_qso', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      _logQsoStatus('QSO logged ✓', 'ok');
+      const form = $('log-qso-form');
+      if (form) form.style.display = 'none';
+    } else {
+      _logQsoStatus(data.error || 'Error logging QSO', 'error');
+      if (btn) btn.disabled = false;
+    }
+  } catch(e) {
+    _logQsoStatus(e.message || 'Network error', 'error');
+    if (btn) btn.disabled = false;
+  }
+}
+
+// ── Render: Header ───────────────────────────────────────────────────────────
+function renderHeader(callsign, results, derived, ecrCoaster = false, callsignHistory = null) {
+  $('hdr-callsign').textContent = callsign;
+
+  const qrz = results.qrz?.data  || {};
+  const hq  = results.hamqth?.data || {};
+  const cl  = results.callook?.data || {};
+  const cb  = results.clublog?.data || {};
+
+  const fname = qrz.fname || '';
+  const lname = qrz.name  || '';
+  const fullname = firstVal(
+    (fname || lname) ? `${fname} ${lname}`.trim() : null,
+    hq.adr_name, cl.name
+  );
+  const cls  = expandClass(firstVal(qrz.class, cl.current?.operClass));
+  const dxcc = firstVal(cb.Name, qrz.land);
+
+  $('hdr-name').textContent = fullname || '';
+
+  let badges = '';
+  if (cls)  badges += badge(cls,  'badge-blue');
+  if (dxcc) badges += badge(dxcc, 'badge-green');
+  if (ecrCoaster) badges += `<span class="badge badge-green"
+    title="East Coast Reflector QSO Quest Coaster"
+    style="cursor:default;">🎯 ECR Coaster</span>`;
+
+  // Notable / special badge — only when sourced from notable_callsigns.json DB
+  const cur = callsignHistory?.current_notable;
+  if (cur?.notable && cur?.source === 'notable_db') {
+    if (cur.entry_type === 'special') {
+      const icon = cur.icon || '📡';
+      badges += `<span class="badge badge-special"
+        title="${esc(cur.profession || cur.reason || '')}">${esc(icon)} Special Station</span>`;
+    } else {
+      badges += `<span class="badge badge-notable"
+        title="${esc(cur.profession || cur.reason || '')}">⭐ Notable</span>`;
+    }
+  }
+
+  $('hdr-badges').innerHTML = badges;
+  $('header-card').classList.add('visible');
+}
+
+// ── Render: Notable / special station banner (above photos in center column) ──
+function renderNotableBanner(history, currentHolderName = '') {
+  const banner = $('notable-banner');
+  if (!banner) return;
+  const cur = history?.current_notable;
+  if (!cur || !cur.notable) {
+    banner.style.display = 'none';
+    banner.innerHTML = '';
+    return;
+  }
+
+  const isSpecial = cur.entry_type === 'special';
+  const isCurrent = cur.is_current_holder !== false;  // default true if undefined
+  const icon      = cur.icon || (isSpecial ? '📡' : '⭐');
+
+  // Icon-to-color palette for special stations
+  const ICON_STYLE = {
+    '⚓': { c: '#00d4aa', bg: 'var(--card)' },
+    '🚢': { c: '#00d4aa', bg: 'var(--card)' },
+    '🛸': { c: '#00d4aa', bg: 'var(--card)' },
+    '🚀': { c: '#00d4aa', bg: 'var(--card)' },
+    '👑': { c: '#00d4aa', bg: 'var(--card)' },
+    '🎵': { c: '#00d4aa', bg: 'var(--card)' },
+    '🎸': { c: '#00d4aa', bg: 'var(--card)' },
+    '🏛️': { c: '#00d4aa', bg: 'var(--card)' },
+    '📡': { c: '#00d4aa', bg: 'var(--card)' },
+    '🎭': { c: '#00d4aa', bg: 'var(--card)' },
+    '⭐': { c: '#00d4aa', bg: 'var(--card)' },
+    '📺': { c: '#00d4aa', bg: 'var(--card)' },
+    '✈️': { c: '#00d4aa', bg: 'var(--card)' },
+	'🕐': { c: '#00d4aa', bg: 'var(--card)' },
+	'📻': { c: '#00d4aa', bg: 'var(--card)' },
+    '🔒': { c: '#00d4aa', bg: 'var(--card)' },
+    '🚂': { c: '#00d4aa', bg: 'var(--card)' },
+  };
+  const DEFAULT_SPECIAL = { c: '#00d4aa', bg: 'rgba(0,212,170,0.08)' };
+  const PERSON_STYLE    = { c: '#00d4aa', bg: 'var(--card)' };
+  const style = isSpecial ? (ICON_STYLE[icon] || DEFAULT_SPECIAL) : PERSON_STYLE;
+
+  banner.style.borderLeftColor = style.c;
+  banner.style.background      = style.bg;
+
+  const displayName = cur.known_as || cur.name || '';
+  let html = '';
+
+  // Thumbnail only for current-holder persons (special / previous holders skip it)
+  if (cur.wikipedia_image && !isSpecial && isCurrent) {
+    html += `<img class="notable-thumb" src="${esc(cur.wikipedia_image)}"
+      alt="" onerror="this.style.display='none'">`;
+  }
+
+  if (isCurrent) {
+    // Current holder
+    if (isSpecial) {
+      html += `<div class="notable-name" style="color:${style.c};">${esc(icon)} ${esc(cur.name || '')}</div>`;
+    } else {
+      html += `<div class="notable-name" style="color:${style.c};">${esc(icon)} ${esc(displayName)}`;
+      if (cur.profession) {
+        html += ` <span class="notable-profession">&#8212; ${esc(cur.profession)}</span>`;
+      }
+      html += `</div>`;
+    }
+    const extract = (cur.wikipedia_extract || cur.reason || '').trim();
+    if (extract) {
+      const short = extract.length > 260 ? extract.slice(0, 260) + '…' : extract;
+      html += `<div class="notable-extract">${esc(short)}</div>`;
+    }
+  } else {
+    // Previously held
+    if (isSpecial) {
+      html += `<div class="notable-name" style="color:${style.c};">${esc(icon)} Previously: ${esc(cur.name || '')}</div>`;
+    } else {
+      html += `<div class="notable-name" style="color:${style.c};">${esc(icon)} Previously held by ${esc(displayName)}`;
+      if (cur.profession) {
+        html += ` <span class="notable-profession">&#8212; ${esc(cur.profession)}</span>`;
+      }
+      html += `</div>`;
+    }
+    html += `<div style="color:var(--muted);font-size:11px;margin-top:4px;line-height:1.5;">
+      This callsign was previously held by this notable ${isSpecial ? 'station' : 'operator'}.${currentHolderName ? ' Current licensee: ' + esc(currentHolderName) : ''}
+    </div>`;
+  }
+
+  if (cur.wikipedia_url) {
+    html += `<div style="margin-top:8px;clear:both;">
+      <a href="${esc(cur.wikipedia_url)}" target="_blank" rel="noopener"
+        style="font-size:12px;color:${style.c};">Wikipedia &#8594;</a>
+    </div>`;
+  } else {
+    html += `<div style="clear:both;"></div>`;
+  }
+
+  banner.innerHTML = html;
+  banner.style.display = 'block';
+}
+
+// ── Render: Callsign History ─────────────────────────────────────────────────
+function renderCallsignHistory(callsign, history) {
+  const cs   = esc(callsign);
+  const body = $('ae7q-body');
+  const histLinks = `
+    <div class="kv-row" style="margin-top:8px;"><span class="kv-label">AJ8U</span><span class="kv-value">
+      <a href="https://www.aj8u.net/query/data/CallHistory.php?CALL=${callsign.toUpperCase()}" target="_blank" rel="noopener noreferrer" style="font-size:13px;">aj8u.net →</a>
+    </span></div>
+    <div class="kv-row"><span class="kv-label">W5YI-VEC</span><span class="kv-value">
+      <a href="https://callinfo.w5yi-vec.org/query/data/CallHistory.php?CALL=${callsign.toUpperCase()}" target="_blank" rel="noopener noreferrer" style="font-size:13px;">w5yi-vec.org →</a>
+    </span></div>
+    <div class="kv-row"><span class="kv-label">CQDX</span><span class="kv-value">
+      <a href="https://cqdx.io/vanity/call/${callsign.toUpperCase()}" target="_blank" rel="noopener noreferrer" style="font-size:13px;">cqdx.io →</a>
+    </span></div>`;
+
+  // No FCC data — static fallback
+  if (!history || history.status === 'skipped' || history.status === 'not_found' || !history.status) {
+    body.innerHTML = `<p style="margin-bottom:12px;color:var(--muted);font-size:13px;line-height:1.6;">
+      Previous licensees and FCC grant history
+      (updated several times daily from FCC data).</p>${histLinks}`;
+    return;
+  }
+
+  // FCC unavailable (timeout or error)
+  if (history.status === 'timeout' || history.status === 'error') {
+    body.innerHTML = `<p style="color:var(--muted);font-size:12px;font-style:italic;
+      margin-bottom:12px;">FCC history unavailable</p>${histLinks}`;
+    return;
+  }
+
+  let html = '';
+
+  // Previous holders table with expandable notable rows
+  const prev = (history.previous_holders || []).filter(h => h.name);
+  if (prev.length) {
+    html += `<div style="margin-bottom:12px;">
+      <div style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.5px;
+        text-transform:uppercase;margin-bottom:8px;">Previous Holders</div>
+      <table class="data-table"><thead>
+        <tr><th>Name</th><th>Dates</th><th>Status</th></tr>
+      </thead><tbody>`;
+    prev.forEach((h, i) => {
+      const star      = h.notable ? '⭐ ' : '';
+      const dates     = [h.grant_date, h.expired_date].filter(Boolean).join(' – ');
+      const rawDetail = (h.wikipedia_extract || h.reason || '').trim();
+      const detail    = rawDetail.length > 280 ? rawDetail.slice(0, 280) + '…' : rawDetail;
+      const rid       = `hist-det-${i}`;
+      if (h.notable && detail) {
+        html += `<tr style="cursor:pointer;" onclick="toggleRow('${rid}')">
+          <td style="font-size:12px;">${star}${esc(h.name)}&nbsp;<span id="tog-${rid}" style="color:var(--muted);font-size:10px;">▶</span></td>
+          <td style="font-size:11px;color:var(--muted);white-space:nowrap;">${esc(dates)}</td>
+          <td style="font-size:11px;color:var(--muted);">${esc(h.status)}</td>
+        </tr>
+        <tr id="${rid}" style="display:none;">
+          <td colspan="3" style="font-size:11px;color:var(--muted);font-style:italic;
+            padding:4px 8px 10px;">${esc(detail)}</td>
+        </tr>`;
+      } else {
+        html += `<tr>
+          <td style="font-size:12px;">${star}${esc(h.name)}</td>
+          <td style="font-size:11px;color:var(--muted);white-space:nowrap;">${esc(dates)}</td>
+          <td style="font-size:11px;color:var(--muted);">${esc(h.status)}</td>
+        </tr>`;
+      }
+    });
+    html += `</tbody></table></div>`;
+  }
+
+  body.innerHTML = html + histLinks;
+}
+
+// ── Render: Top Contacts ─────────────────────────────────────────────────────
+function renderTopContacts(topContacts) {
+  const card = $('top-contacts-card');
+  const body = $('top-contacts-body');
+  if (!card || !body) return;
+
+  if (!topContacts || !topContacts.length) {
+    body.innerHTML = '<span class="na">No log data (Wavelog not configured or empty log)</span>';
+    card.style.display = 'block';
+    return;
+  }
+
+  const rows = topContacts.map(({ callsign, count, name }) => {
+    const cs = esc(callsign);
+    return `<div class="kv-row" style="justify-content:space-between;align-items:center;padding:2px 0;">
+      <span><a href="#" style="font-family:'Courier New',monospace;font-weight:700;font-size:13px;color:var(--accent);text-decoration:none;"
+        onclick="event.preventDefault();document.getElementById('callsign-input').value='${cs}';doLookup();">${cs}</a></span>
+      <span style="color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;flex:1;padding:0 6px;">${esc(name || '')}</span>
+      <span style="color:var(--muted);font-size:12px;">${count}</span>
+    </div>`;
+  }).join('');
+
+  body.innerHTML = `${rows}
+    <p style="color:var(--muted);font-size:11px;font-style:italic;margin-top:8px;line-height:1.5;">
+      Based on your Wavelog log</p>`;
+  card.style.display = 'block';
+}
+
+// ── Render: Status bar ───────────────────────────────────────────────────────
+function renderStatusBar(results) {
+  const SOURCES = {
+    callook:'Callook (FCC Data)', qrz:'QRZ', hamqth:'HamQTH',
+    clublog:'Clublog', wavelog:'Wavelog',
+    pskreporter:'PSK Reporter', allstarlink:'AllStarLink',
+    hamdb:'HamDB',
+    weather:'Weather', timezone:'Timezone',
+  };
+  const CLS  = { ok:'pill-ok', error:'pill-err', not_configured:'pill-nc',
+                 not_found:'pill-nf', skipped:'pill-nc', unavailable:'pill-nc' };
+  const ICON = { ok:'✓', error:'✗', not_configured:'○',
+                 not_found:'–', skipped:'○', unavailable:'○' };
+  const pills = Object.entries(SOURCES).map(([k, name], i) => {
+    const r   = results[k];
+    const st  = r?.status || 'error';
+    const tip = r?.error || (st === 'ok' ? 'Data received' : st);
+    const cls = CLS[st] || 'pill-nc';
+    const icon = ICON[st] || '?';
+    return `<span class="pill ${cls} pill-anim" title="${esc(tip)}"
+      style="animation-delay:${i * 55}ms">${icon} ${esc(name)}</span>`;
+  }).join(' ');
+  $('status-pills').innerHTML = pills;
+  $('status-bar').classList.add('visible');
+}
+
+
+
+// ── Recent Lookups (localStorage) ────────────────────────────────────────────
+const RECENT_KEY       = 'hamlookup_recent';
+const MAX_RECENT       = 10;
+
+function addRecentLookup(callsign, name) {
+  try {
+    let recent = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+    recent = recent.filter(r => r.callsign !== callsign.toUpperCase());
+    recent.unshift({ callsign: callsign.toUpperCase(), name: name || '', ts: new Date().toISOString() });
+    recent = recent.slice(0, MAX_RECENT);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+  } catch(e) {}
+}
+
+function renderRecentLookups() {
+  try {
+    const recent = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+    const card = $('recent-lookups-card');
+    const body = $('recent-lookups-body');
+    if (!body) return;
+    if (card) card.style.display = 'block';
+    if (!recent.length) {
+      body.innerHTML = '<div style="font-size:0.8rem;color:var(--muted);padding:4px 0;">No recent lookups yet</div>';
+      return;
+    }
+    body.innerHTML = recent.map(r => {
+      const cs = esc(r.callsign);
+      return `<div style="display:flex;justify-content:space-between;align-items:center;
+          padding:4px 0;border-bottom:1px solid var(--border);font-size:0.85rem;">
+        <a href="#" style="color:var(--accent);text-decoration:none;
+          font-family:'Courier New',monospace;font-weight:700;"
+          onclick="event.preventDefault();$('callsign-input').value='${cs}';doLookup();">${cs}</a>
+        <span style="color:var(--muted);font-size:0.75rem;overflow:hidden;
+          text-overflow:ellipsis;white-space:nowrap;max-width:140px;">${esc(r.name || '')}</span>
+      </div>`;
+    }).join('');
+  } catch(e) {}
+}
+
+// ── Reset / home button ──────────────────────────────────────────────────────
+function resetPage() {
+  closeMapOverlay();
+  $('callsign-input').value = '';
+  $('header-card').classList.remove('visible');
+  $('status-bar').classList.remove('visible');
+  $('map-card').style.display = 'none';
+  $('error-msg').style.display = 'none';
+  document.title = 'Ham Callsign Lookup';
+  if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+  if (clockIntvl) { clearInterval(clockIntvl); clockIntvl = null; }
+  $('local-clock').textContent  = '--:--:--';
+  $('local-tz').textContent     = 'UTC';
+  const nb = $('notable-banner');
+  if (nb) { nb.style.display = 'none'; nb.innerHTML = ''; }
+  const lb = $('location-blurb');
+  if (lb) lb.style.display = 'none';
+  $('ae7q-body').innerHTML = '<span class="na">Loading…</span>';
+  $('main-grid').style.display = 'none';
+  window.scrollTo(0, 0);
+  $('callsign-input').focus();
+}
+
+// ── UTC clock (always-on in header) ─────────────────────────────────────────
+function startUTCClock() {
+  const tick = () => {
+    const n   = new Date();
+    const pad = x => String(x).padStart(2, '0');
+    const s   = `${n.getUTCFullYear()}-${pad(n.getUTCMonth()+1)}-${pad(n.getUTCDate())} `
+              + `${pad(n.getUTCHours())}:${pad(n.getUTCMinutes())}:${pad(n.getUTCSeconds())} UTC`;
+    const el  = $('utc-clock');
+    if (el) el.textContent = s;
+  };
+  tick();
+  setInterval(tick, 1000);
+}
+// Start UTC clock as soon as DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => { startUTCClock(); });
+} else {
+  startUTCClock();
+}
+
+// ── Main render ──────────────────────────────────────────────────────────────
+function render(payload) {
+  const { callsign, results, derived, social = {},
+          wavelog_qsos = [], top_contacts = [],
+          callsign_history = null } = payload;
+  const ecrCoaster        = !!payload.ecr_coaster;
+  const currentHolderName = payload.current_holder_name || '';
+
+  // Safety net: if history came back without current_notable but we have notable_entry, inject it
+  if (callsign_history && !callsign_history.current_notable && payload.notable_entry) {
+    const _ne = payload.notable_entry;
+    callsign_history.current_notable = {
+      name: _ne.name || '', known_as: _ne.known_as || '', notable: true,
+      reason: _ne.note || '', profession: _ne.profession || '',
+      wikipedia_extract: null, wikipedia_image: null, wikipedia_url: _ne.wikipedia || null,
+      source: 'notable_db', entry_type: _ne.type || 'person', icon: _ne.icon || '⭐',
+      is_current_holder: payload.notable_is_current_holder !== false,
+    };
+  }
+
+  const notableInfo = callsign_history?.current_notable || null;
+  _currentCallsign   = callsign;
+  _currentLookupData = payload;
+
+  renderHeader(callsign, results, derived, ecrCoaster, callsign_history);
+  renderQTH(results, derived);
+  renderWeather(results);
+  renderPhotos(results, callsign);
+  renderNotableBanner(callsign_history, currentHolderName);
+  renderSocialIcons(social);
+  renderLicense(results);
+  renderFlags(results, callsign, social);
+  renderPortableOps(payload);
+  renderDigitalVoice(results, callsign);
+  renderPSK(results);
+  renderWavelog(results, wavelog_qsos, notableInfo);
+  renderCallsignHistory(callsign, callsign_history);
+  renderTopContacts(top_contacts);
+  renderStatusBar(results);
+  renderDXPath(payload);
+
+  // Clock
+  const tz        = results.timezone?.data?.timezone;
+  const utcOffset = results.hamqth?.data?.utc_offset || results.qrz?.data?.gmtoffset;
+  startClock(tz || null);
+  $('local-tz').textContent = tz || (utcOffset ? `UTC${utcOffset}` : 'UTC (approx)');
+
+  // Map — in left column card, shown only when coords available
+  if (derived.lat && derived.lon) {
+    setTimeout(() => initMap(derived.lat, derived.lon), 120);
+  }
+
+  // Location blurb (below map card in left column)
+  const blurbEl = $('location-blurb');
+  if (blurbEl) {
+    const blurb = payload.location_blurb || [];
+    if (blurb.length) {
+      blurbEl.innerHTML = blurb.map(b =>
+        `<div style="display:flex;gap:6px;font-size:0.78rem;color:var(--muted);` +
+        `padding:2px 0;margin-bottom:3px;">` +
+        `<span style="color:var(--border);flex-shrink:0;">&#8226;</span>` +
+        `<span>${esc(b)}</span>` +
+        `</div>`
+      ).join('');
+      blurbEl.style.display = 'block';
+    } else {
+      blurbEl.style.display = 'none';
+    }
+  }
+
+  // Recent lookups — record this search and refresh the card
+  const _qd = results.qrz?.data || {};
+  const _hq = results.hamqth?.data || {};
+  const _cl = results.callook?.data || {};
+  const _fn = _qd.fname || '', _ln = _qd.name || '';
+  const opName = firstVal(
+    (_fn || _ln) ? `${_fn} ${_ln}`.trim() : null,
+    _hq.adr_name, _cl.name
+  ) || '';
+  addRecentLookup(callsign, opName);
+  renderRecentLookups();
+  $('main-grid').style.display = 'grid';
+}
+
+// ── Lookup ────────────────────────────────────────────────────────────────────
+async function doLookup() {
+  if (_lookupInProgress) return;
+  const cs = $('callsign-input').value.trim().toUpperCase();
+  if (!cs) { showError('Enter a callsign'); return; }
+
+  _lookupInProgress = true;
+  $('error-msg').style.display = 'none';
+  $('loading').classList.add('active');
+  $('search-btn').disabled = true;
+  $('header-card').classList.remove('visible');
+  $('status-bar').classList.remove('visible');
+  $('map-card').style.display = 'none';
+
+  // Elapsed timer
+  if (elapsedIntvl) clearInterval(elapsedIntvl);
+  const t0 = Date.now();
+  $('loading-elapsed').textContent = '0.0s';
+  elapsedIntvl = setInterval(() => {
+    $('loading-elapsed').textContent = ((Date.now() - t0) / 1000).toFixed(1) + 's';
+  }, 100);
+
+  // Staggered source-name reveal
+  const SOURCE_LIST = ['Callook', 'QRZ.com', 'HamQTH', 'Clublog',
+                       'Wavelog', 'PSK Reporter', 'AllStarLink', 'HamDB', 'Open-Meteo'];
+  let srcIdx = 0;
+  $('loading-sources').innerHTML = '';
+  if (sourceIntvl) clearInterval(sourceIntvl);
+  sourceIntvl = setInterval(() => {
+    if (srcIdx < SOURCE_LIST.length) {
+      const el = document.createElement('div');
+      el.className = 'loading-src';
+      el.textContent = `✓ ${SOURCE_LIST[srcIdx]}`;
+      $('loading-sources').appendChild(el);
+      srcIdx++;
+    } else {
+      clearInterval(sourceIntvl);
+      sourceIntvl = null;
+    }
+  }, 800);
+
+  try {
+    const res = await fetch('/lookup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callsign: cs }),
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.error || `HTTP ${res.status}`);
+    }
+    render(await res.json());
+    $('callsign-input').value = '';
+  } catch (e) {
+    showError(e.message || 'Lookup failed');
+  } finally {
+    clearInterval(elapsedIntvl);
+    elapsedIntvl = null;
+    $('loading-elapsed').textContent = '';
+    clearInterval(sourceIntvl);
+    sourceIntvl = null;
+    $('loading-sources').innerHTML = '';
+    $('loading').classList.remove('active');
+    $('search-btn').disabled = false;
+    _lookupInProgress = false;
+  }
+}
+
+function showError(msg) {
+  const el = $('error-msg');
+  el.textContent = msg;
+  el.style.display = 'inline';
+}
+
+// ── Event wiring ──────────────────────────────────────────────────────────────
+$('search-btn').addEventListener('click', doLookup);
+$('callsign-input').addEventListener('keydown', e => { if (e.key === 'Enter') doLookup(); });
+$('callsign-input').addEventListener('blur', () => {
+  if ($('callsign-input').value.trim()) doLookup();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMapOverlay(); });
+$('callsign-input').addEventListener('input', e => {
+  e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9/]/g, '');
+});
+$('callsign-input').focus();
+</script>
+</body>
+</html>

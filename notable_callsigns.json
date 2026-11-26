@@ -1,0 +1,1914 @@
+{
+  "_comment": "Notable callsigns for HamLookup. Types: person or special. Icons: ⭐ person, ⚓ ship, 🛸 space, 📻 radio org, 🕐 time station, ✈️ aviation, 🚀 military, 📡 inventor/pioneer, 👑 royalty, 🎭 entertainment, 🎵 music. Volume-mounted at /app/notable_callsigns.json.",
+  "NA1SS": {
+    "type": "special",
+    "name": "International Space Station (ARISS)",
+    "note": "Primary US callsign for ISS ham radio. Active since December 21, 2000 — first ARISS contact by ISS Expedition 1 Commander Bill Shepherd.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Amateur_Radio_on_the_International_Space_Station",
+    "icon": "🛸"
+  },
+  "RS0ISS": {
+    "type": "special",
+    "name": "International Space Station (Russian)",
+    "note": "Russian callsign for ISS amateur radio operations.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Amateur_Radio_on_the_International_Space_Station",
+    "icon": "🛸"
+  },
+  "DL0ISS": {
+    "type": "special",
+    "name": "International Space Station (German)",
+    "note": "German callsign for ISS amateur radio operations.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Amateur_Radio_on_the_International_Space_Station",
+    "icon": "🛸"
+  },
+  "JY1": {
+    "type": "person",
+    "name": "King Hussein of Jordan",
+    "known_as": "King Hussein",
+    "profession": "King of Jordan (1952-1999)",
+    "note": "One of the most celebrated ham operators in history. Held one of the rarest callsigns — JY1. Known for making contacts with ordinary hams worldwide. Silent key 1999.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Hussein_of_Jordan",
+    "icon": "👑"
+  },
+  "JY2": {
+    "type": "person",
+    "name": "Queen Noor of Jordan",
+    "known_as": "Queen Noor",
+    "profession": "Queen of Jordan",
+    "note": "Wife of King Hussein (JY1), licensed ham radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Queen_Noor_of_Jordan",
+    "icon": "👑"
+  },
+  "EA0JC": {
+    "type": "person",
+    "name": "Juan Carlos I of Spain",
+    "known_as": "King Juan Carlos",
+    "profession": "King of Spain (1975-2014)",
+    "note": "Former King of Spain, passionate amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Juan_Carlos_I_of_Spain",
+    "icon": "👑"
+  },
+  "HS1A": {
+    "type": "person",
+    "name": "Bhumibol Adulyadej",
+    "known_as": "King Bhumibol / King Rama IX",
+    "profession": "King of Thailand (1946-2016)",
+    "note": "Longest-reigning monarch in Thai history, avid ham radio operator. Silent key 2016.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Bhumibol_Adulyadej",
+    "icon": "👑"
+  },
+  "HS1D": {
+    "type": "person",
+    "name": "Princess Maha Chakri Sirindhorn",
+    "known_as": "Princess Sirindhorn",
+    "profession": "Thai Crown Princess",
+    "note": "Thai crown princess, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Maha_Chakri_Sirindhorn",
+    "icon": "👑"
+  },
+  "A41AA": {
+    "type": "person",
+    "name": "Qaboos bin Said Al Said",
+    "known_as": "Sultan Qaboos",
+    "profession": "Sultan of Oman (1970-2020)",
+    "note": "Sultan of Oman, licensed amateur radio operator. Silent key 2020.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Qaboos_bin_Said_al_Said",
+    "icon": "👑"
+  },
+  "9K2CS": {
+    "type": "person",
+    "name": "Prince Yousuf Al-Sabah",
+    "known_as": "Prince Yousuf",
+    "profession": "Kuwaiti Royal Family",
+    "note": "Member of the Kuwaiti royal family, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Al-Sabah_family",
+    "icon": "👑"
+  },
+  "HZ1TA": {
+    "type": "person",
+    "name": "Prince Talal bin Abdulaziz",
+    "known_as": "Prince Talal",
+    "profession": "Saudi Arabian Prince / UN Goodwill Ambassador",
+    "note": "Saudi prince and UN Goodwill Ambassador, licensed ham radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Talal_bin_Abdulaziz_Al_Saud",
+    "icon": "👑"
+  },
+  "CN8MH": {
+    "type": "person",
+    "name": "King Hassan II of Morocco",
+    "known_as": "King Hassan II",
+    "profession": "King of Morocco (1961-1999)",
+    "note": "King of Morocco, licensed amateur radio operator. Silent key 1999.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Hassan_II_of_Morocco",
+    "icon": "👑"
+  },
+  "3A0AG": {
+    "type": "person",
+    "name": "Prince Albert II of Monaco",
+    "known_as": "Prince Albert",
+    "profession": "Ruling Prince of Monaco",
+    "note": "Ruling Prince of Monaco, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Albert_II,_Prince_of_Monaco",
+    "icon": "👑"
+  },
+  "K7UGA": {
+    "type": "person",
+    "name": "Barry Goldwater",
+    "known_as": "Barry Goldwater",
+    "profession": "US Senator / 1964 Presidential Candidate",
+    "note": "Five-term US Senator from Arizona, 1964 Republican presidential nominee. Licensed since the 1920s (also 6BPI, K3UIG). Founded MARS. Silent key 1998.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Barry_Goldwater",
+    "icon": "⭐"
+  },
+  "W6RIP": {
+    "type": "person",
+    "name": "Ronald Reagan",
+    "known_as": "Ronald Reagan",
+    "profession": "40th US President / Actor",
+    "note": "40th President of the United States, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Ronald_Reagan",
+    "icon": "⭐"
+  },
+  "W5KPI": {
+    "type": "person",
+    "name": "Gerald Ford",
+    "known_as": "Gerald Ford",
+    "profession": "38th US President",
+    "note": "38th President of the United States, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Gerald_Ford",
+    "icon": "⭐"
+  },
+  "I0FCG": {
+    "type": "person",
+    "name": "Francesco Cossiga",
+    "known_as": "Francesco Cossiga",
+    "profession": "President of Italy (1985-1992)",
+    "note": "Former President of Italy, licensed amateur radio operator. Silent key 2010.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Francesco_Cossiga",
+    "icon": "⭐"
+  },
+  "VU2RG": {
+    "type": "person",
+    "name": "Rajiv Gandhi",
+    "known_as": "Rajiv Gandhi",
+    "profession": "Prime Minister of India (1984-1989)",
+    "note": "Prime Minister of India, licensed amateur radio operator. Assassinated 1991. Callsign now held by a memorial radio club.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Rajiv_Gandhi",
+    "icon": "⭐"
+  },
+  "LU1SM": {
+    "type": "person",
+    "name": "Carlos Menem",
+    "known_as": "Carlos Menem",
+    "profession": "President of Argentina (1989-1999)",
+    "note": "Former President of Argentina, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Carlos_Menem",
+    "icon": "⭐"
+  },
+  "JI1KIT": {
+    "type": "person",
+    "name": "Keizo Obuchi",
+    "known_as": "Keizo Obuchi",
+    "profession": "84th Prime Minister of Japan",
+    "note": "Prime Minister of Japan 1998-2000, licensed amateur radio operator. Silent key 2000.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Keizo_Obuchi",
+    "icon": "⭐"
+  },
+  "YN1AS": {
+    "type": "person",
+    "name": "Anastasio Somoza",
+    "known_as": "Anastasio Somoza",
+    "profession": "President of Nicaragua",
+    "note": "Former President of Nicaragua, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Anastasio_Somoza_Debayle",
+    "icon": "⭐"
+  },
+  "K2ZCZ": {
+    "type": "person",
+    "name": "George Pataki",
+    "known_as": "George Pataki",
+    "profession": "Governor of New York (1995-2006)",
+    "note": "Former Governor of New York, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/George_Pataki",
+    "icon": "⭐"
+  },
+  "W7EQI": {
+    "type": "person",
+    "name": "Greg Walden",
+    "known_as": "Greg Walden",
+    "profession": "US Congressman (1999-2021)",
+    "note": "Former US Congressman from Oregon, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Greg_Walden",
+    "icon": "⭐"
+  },
+  "K2USA": {
+    "type": "person",
+    "name": "Hoyt Vandenberg",
+    "known_as": "General Vandenberg",
+    "profession": "USAF Chief of Staff / CIA Director",
+    "note": "Second Director of the CIA and second Chief of Staff of the US Air Force, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Hoyt_Vandenberg",
+    "icon": "⭐"
+  },
+  "VU288PS": {
+    "type": "person",
+    "name": "Rajiv Gandhi",
+    "known_as": "Rajiv Gandhi",
+    "profession": "Prime Minister of India (1984-1989)",
+    "note": "Prime Minister of India, licensed amateur radio operator. Assassinated 1991.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Rajiv_Gandhi",
+    "icon": "⭐"
+  },
+  "WB6ACU": {
+    "type": "person",
+    "name": "Joe Walsh",
+    "known_as": "Joe Walsh",
+    "profession": "Rock Musician / Eagles Guitarist",
+    "note": "Guitarist for the Eagles and The James Gang, Rock and Roll Hall of Fame inductee. Amateur Extra class licensee, very active ham operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Joe_Walsh",
+    "icon": "🎵"
+  },
+  "W4CGP": {
+    "type": "person",
+    "name": "Chet Atkins",
+    "known_as": "Chet Atkins",
+    "profession": "Country Music Pioneer / Guitarist",
+    "note": "Legendary country guitarist, RCA Records producer, Country Music Hall of Fame inductee. Also licensed as WA4CZD. Silent key 2001.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Chet_Atkins",
+    "icon": "🎵"
+  },
+  "WA4CZD": {
+    "type": "person",
+    "name": "Chet Atkins",
+    "known_as": "Chet Atkins",
+    "profession": "Country Music Pioneer / Guitarist",
+    "note": "Legendary country guitarist, RCA Records producer, Country Music Hall of Fame inductee. Also licensed as W4CGP. Silent key 2001.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Chet_Atkins",
+    "icon": "🎵"
+  },
+  "WB4KCG": {
+    "type": "person",
+    "name": "Ronnie Milsap",
+    "known_as": "Ronnie Milsap",
+    "profession": "Country Music Singer",
+    "note": "Grammy Award-winning country music singer, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Ronnie_Milsap",
+    "icon": "🎵"
+  },
+  "KD4WUJ": {
+    "type": "person",
+    "name": "Patty Loveless",
+    "known_as": "Patty Loveless",
+    "profession": "Country Music Singer",
+    "note": "Grammy Award-winning country music singer, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Patty_Loveless",
+    "icon": "🎵"
+  },
+  "WD4SKT": {
+    "type": "person",
+    "name": "Donnie Osmond",
+    "known_as": "Donnie Osmond",
+    "profession": "Singer / Actor",
+    "note": "Singer and actor, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Donnie_Osmond",
+    "icon": "🎵"
+  },
+  "W2JOF": {
+    "type": "person",
+    "name": "Cliff Richard",
+    "known_as": "Sir Cliff Richard",
+    "profession": "British Pop Singer",
+    "note": "British pop singer, licensed amateur radio operator (US callsign).",
+    "wikipedia": "https://en.wikipedia.org/wiki/Cliff_Richard",
+    "icon": "🎵"
+  },
+  "K9EID": {
+    "type": "person",
+    "name": "Bob Heil",
+    "known_as": "Bob Heil",
+    "profession": "Sound Engineer / Heil Sound Founder",
+    "note": "Legendary sound engineer for The Who, Grateful Dead, and The Eagles. Founder of Heil Sound microphones, major contributor to amateur radio audio technology.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Bob_Heil",
+    "icon": "🎵"
+  },
+  "W6UK": {
+    "type": "person",
+    "name": "Alvino Rey",
+    "known_as": "Alvino Rey",
+    "profession": "Musician / Big Band Leader",
+    "note": "Pioneer of the electric and steel guitar, big band leader. Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Alvino_Rey",
+    "icon": "🎵"
+  },
+  "KG4UYY": {
+    "type": "person",
+    "name": "Lance Bass",
+    "known_as": "Lance Bass",
+    "profession": "Singer / *NSYNC",
+    "note": "Member of pop group *NSYNC, licensed amateur radio operator. Also trained as a cosmonaut.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Lance_Bass",
+    "icon": "🎵"
+  },
+  "K6UXU": {
+    "type": "person",
+    "name": "Tex Beneke",
+    "known_as": "Tex Beneke",
+    "profession": "Big Band Saxophonist / Singer",
+    "note": "Saxophonist and singer with the Glenn Miller Orchestra, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Tex_Beneke",
+    "icon": "🎵"
+  },
+  "KB2GSD": {
+    "type": "person",
+    "name": "Walter Cronkite",
+    "known_as": "Walter Cronkite",
+    "profession": "CBS News Anchor",
+    "note": "Legendary CBS Evening News anchor, also licensed as K0MIR. Called the most trusted man in America. Silent key 2009.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Walter_Cronkite",
+    "icon": "⭐"
+  },
+  "K0MIR": {
+    "type": "person",
+    "name": "Walter Cronkite",
+    "known_as": "Walter Cronkite",
+    "profession": "CBS News Anchor",
+    "note": "Legendary CBS Evening News anchor, also licensed as KB2GSD. Called the most trusted man in America. Silent key 2009.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Walter_Cronkite",
+    "icon": "⭐"
+  },
+  "W6OBB": {
+    "type": "person",
+    "name": "Art Bell",
+    "known_as": "Art Bell",
+    "profession": "Radio Host / Coast to Coast AM Founder",
+    "note": "Creator and host of Coast to Coast AM, the late-night paranormal radio program. Active ham operator. Silent key 2018.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Art_Bell",
+    "icon": "⭐"
+  },
+  "W2IKAM": {
+    "type": "person",
+    "name": "Al Roker",
+    "known_as": "Al Roker",
+    "profession": "NBC Today Show Weather Anchor",
+    "note": "NBC Today Show meteorologist and weather anchor, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Al_Roker",
+    "icon": "⭐"
+  },
+  "N6FUP": {
+    "type": "person",
+    "name": "Jean Shepherd",
+    "known_as": "Jean Shepherd",
+    "profession": "Radio Raconteur / Author",
+    "note": "Beloved radio storyteller and author, narrator of A Christmas Story. Long-time ham radio enthusiast.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Jean_Shepherd",
+    "icon": "⭐"
+  },
+  "KA6BJW": {
+    "type": "person",
+    "name": "Marlon Brando",
+    "known_as": "Marlon Brando",
+    "profession": "Actor",
+    "note": "Academy Award-winning actor (The Godfather, Apocalypse Now). Also operated as KE6PZH and FO5GJ from his private island Tetiaroa. Silent key 2004.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Marlon_Brando",
+    "icon": "🎭"
+  },
+  "KE6PZH": {
+    "type": "person",
+    "name": "Marlon Brando",
+    "known_as": "Marlon Brando",
+    "profession": "Actor",
+    "note": "Academy Award-winning actor (The Godfather, Apocalypse Now). Also operated as KA6BJW and FO5GJ from his private island Tetiaroa. Silent key 2004.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Marlon_Brando",
+    "icon": "🎭"
+  },
+  "FO5GJ": {
+    "type": "person",
+    "name": "Marlon Brando",
+    "known_as": "Marlon Brando",
+    "profession": "Actor",
+    "note": "Academy Award-winning actor. Operated from his private island Tetiaroa in French Polynesia. Silent key 2004.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Marlon_Brando",
+    "icon": "🎭"
+  },
+  "KK6OTD": {
+    "type": "person",
+    "name": "Tim Allen",
+    "known_as": "Tim Allen",
+    "profession": "Actor / Comedian",
+    "note": "Actor known for Home Improvement and the Toy Story franchise, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Tim_Allen",
+    "icon": "🎭"
+  },
+  "WA7BKG": {
+    "type": "person",
+    "name": "Garry Shandling",
+    "known_as": "Garry Shandling",
+    "profession": "Comedian / Actor",
+    "note": "Stand-up comedian and actor, creator of The Larry Sanders Show, licensed amateur radio operator. Silent key 2016.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Garry_Shandling",
+    "icon": "🎭"
+  },
+  "W6UJS": {
+    "type": "person",
+    "name": "Cliff Arquette",
+    "known_as": "Cliff Arquette",
+    "profession": "Actor / Comedian",
+    "note": "Actor and comedian, creator of the Charley Weaver character on The Tonight Show and Hollywood Squares. Silent key 1974.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Cliff_Arquette",
+    "icon": "🎭"
+  },
+  "WA6FQA": {
+    "type": "person",
+    "name": "Stu Gilliam",
+    "known_as": "Stu Gilliam",
+    "profession": "Comedian / Actor",
+    "note": "Comedian and actor, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Stu_Gilliam",
+    "icon": "🎭"
+  },
+  "N6KGC": {
+    "type": "person",
+    "name": "Priscilla Presley",
+    "known_as": "Priscilla Presley",
+    "profession": "Actress / Businesswoman",
+    "note": "Actress and businesswoman, ex-wife of Elvis Presley, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Priscilla_Presley",
+    "icon": "🎭"
+  },
+  "NY6YOS": {
+    "type": "person",
+    "name": "Priscilla Presley",
+    "known_as": "Priscilla Presley",
+    "profession": "Actress / Businesswoman",
+    "note": "Actress and businesswoman, ex-wife of Elvis Presley, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Priscilla_Presley",
+    "icon": "🎭"
+  },
+  "KG6FZX": {
+    "type": "person",
+    "name": "Patty Hearst",
+    "known_as": "Patty Hearst",
+    "profession": "Newspaper Heiress / Socialite",
+    "note": "Granddaughter of William Randolph Hearst, known for 1974 SLA kidnapping. Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Patty_Hearst",
+    "icon": "🎭"
+  },
+  "WV6VLY": {
+    "type": "person",
+    "name": "Steve Wozniak",
+    "known_as": "Woz",
+    "profession": "Apple Computer Co-Founder / Engineer",
+    "note": "Co-founder of Apple Computer with Steve Jobs. Credits ham radio as foundational to his interest in electronics and computing.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Steve_Wozniak",
+    "icon": "⭐"
+  },
+  "K6HIH": {
+    "type": "person",
+    "name": "Howard Hughes",
+    "known_as": "Howard Hughes",
+    "profession": "Aviator / Industrialist / Film Producer",
+    "note": "Billionaire aviator, engineer, film producer, and philanthropist, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Howard_Hughes",
+    "icon": "⭐"
+  },
+  "K6RHL": {
+    "type": "person",
+    "name": "Stuart Hamblen",
+    "known_as": "Stuart Hamblen",
+    "profession": "Country Gospel Singer / Actor",
+    "note": "Country gospel singer, actor, and 1952 Prohibition Party presidential candidate. Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Stuart_Hamblen",
+    "icon": "⭐"
+  },
+  "K4ZVZ": {
+    "type": "person",
+    "name": "Paul Tibbets",
+    "known_as": "Paul Tibbets",
+    "profession": "USAF General / Enola Gay Pilot",
+    "note": "Pilot of the Enola Gay that dropped the first atomic bomb on Hiroshima, August 6, 1945. Silent key 2007.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Paul_Tibbets",
+    "icon": "⭐"
+  },
+  "W6AM": {
+    "type": "person",
+    "name": "Don Wallace",
+    "known_as": "Don Wallace",
+    "profession": "Pioneer DXer",
+    "note": "Legendary DXer who built a famous 92-acre rhombic antenna farm in Palos Verdes, CA. Worked all countries multiple times.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Don_Wallace_(amateur_radio)",
+    "icon": "📡"
+  },
+  "W6ZH": {
+    "type": "person",
+    "name": "Herbert Hoover III",
+    "known_as": "Herbert Hoover III",
+    "profession": "ARRL / IARU President",
+    "note": "Grandson of President Herbert Hoover, former ARRL and IARU President.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Herbert_Hoover",
+    "icon": "⭐"
+  },
+  "W6NRM": {
+    "type": "person",
+    "name": "Robert Weitbrecht",
+    "known_as": "Robert Weitbrecht",
+    "profession": "Inventor of TTY for the Deaf",
+    "note": "Physicist who invented the acoustic coupler teletypewriter (TTY) enabling deaf people to use the telephone. Silent key 1983.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Robert_Weitbrecht",
+    "icon": "📡"
+  },
+  "W5LFL": {
+    "type": "person",
+    "name": "Owen Garriott",
+    "known_as": "Owen Garriott",
+    "profession": "NASA Astronaut / Physicist",
+    "note": "First amateur radio operator to operate from space (STS-9, 1983). Pioneer of ARISS. His son Richard also operated from ISS. Silent key 2019.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Owen_Garriott",
+    "icon": "🛸"
+  },
+  "KD5GSL": {
+    "type": "person",
+    "name": "William Shepherd",
+    "known_as": "Bill Shepherd",
+    "profession": "NASA Astronaut / ISS Expedition 1 Commander",
+    "note": "Commander of ISS Expedition 1, made the first ARISS contact from ISS on December 21, 2000.",
+    "wikipedia": "https://en.wikipedia.org/wiki/William_Shepherd_(astronaut)",
+    "icon": "🛸"
+  },
+  "KC5ZSX": {
+    "type": "person",
+    "name": "Sally Ride",
+    "known_as": "Sally Ride",
+    "profession": "NASA Astronaut / Physicist",
+    "note": "First American woman in space (1983), licensed amateur radio operator. Silent key 2012.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Sally_Ride",
+    "icon": "🛸"
+  },
+  "WA4SIR": {
+    "type": "person",
+    "name": "Ron Parise",
+    "known_as": "Ron Parise",
+    "profession": "NASA Astronaut / Astrophysicist",
+    "note": "NASA payload specialist, flew on STS-51-G and STS-35. Silent key 2008.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Ron_Parise",
+    "icon": "🛸"
+  },
+  "GB1MIR": {
+    "type": "person",
+    "name": "Helen Sharman",
+    "known_as": "Helen Sharman",
+    "profession": "British Astronaut / Chemist",
+    "note": "First Briton in space (Mir space station, 1991), licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Helen_Sharman",
+    "icon": "🛸"
+  },
+  "7L2NJY": {
+    "type": "person",
+    "name": "Mamoru Mohri",
+    "known_as": "Mamoru Mohri",
+    "profession": "Japanese Astronaut / Scientist",
+    "note": "First Japanese citizen to travel in space (STS-47, 1992). Also licensed as JI1KDG.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Mamoru_Mohri",
+    "icon": "🛸"
+  },
+  "JI1KDG": {
+    "type": "person",
+    "name": "Mamoru Mohri",
+    "known_as": "Mamoru Mohri",
+    "profession": "Japanese Astronaut / Scientist",
+    "note": "First Japanese citizen to travel in space (STS-47, 1992). Also licensed as 7L2NJY.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Mamoru_Mohri",
+    "icon": "🛸"
+  },
+  "DP3MIR": {
+    "type": "person",
+    "name": "Ulf Merbold",
+    "known_as": "Ulf Merbold",
+    "profession": "ESA Astronaut / Physicist",
+    "note": "First ESA astronaut to fly on a US Space Shuttle (STS-9, 1983).",
+    "wikipedia": "https://en.wikipedia.org/wiki/Ulf_Merbold",
+    "icon": "🛸"
+  },
+  "N5VHO": {
+    "type": "person",
+    "name": "Rusty Schweickart",
+    "known_as": "Rusty Schweickart",
+    "profession": "NASA Astronaut / Apollo 9",
+    "note": "Apollo 9 lunar module pilot (1969), performed first spacewalk of Apollo program.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Rusty_Schweickart",
+    "icon": "🛸"
+  },
+  "K1JT": {
+    "type": "person",
+    "name": "Joseph H. Taylor Jr.",
+    "known_as": "Joe Taylor",
+    "profession": "Nobel Prize-winning Physicist",
+    "note": "1993 Nobel Prize in Physics for discovery of binary pulsars. Creator of WSJT suite including FT8, FT4, JT65 — digital modes that revolutionized weak-signal amateur radio communication.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Joseph_H._Taylor_Jr.",
+    "icon": "📡"
+  },
+  "W8JK": {
+    "type": "person",
+    "name": "John Kraus",
+    "known_as": "John Kraus",
+    "profession": "Radio Astronomer / Antenna Pioneer",
+    "note": "Pioneering radio astronomer, inventor of the W8JK beam and helical antenna. Author of classic radio and antenna textbooks. Silent key 2004.",
+    "wikipedia": "https://en.wikipedia.org/wiki/John_D._Kraus",
+    "icon": "📡"
+  },
+  "JA3FA": {
+    "type": "person",
+    "name": "Tokuzo Inoue",
+    "known_as": "Tokuzo Inoue",
+    "profession": "Founder of ICOM",
+    "note": "Founder of ICOM Incorporated, one of the world's leading amateur radio equipment manufacturers.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Icom_Incorporated",
+    "icon": "📡"
+  },
+  "JA1MP": {
+    "type": "person",
+    "name": "Sako Hasegawa",
+    "known_as": "Sako Hasegawa",
+    "profession": "Founder of Yaesu",
+    "note": "Founder of Yaesu Musen (now Vertex Standard), one of the world's leading amateur radio equipment manufacturers. Silent key.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Yaesu_(brand)",
+    "icon": "📡"
+  },
+  "XE1GC": {
+    "type": "person",
+    "name": "Guillermo Gonzalez Camarena",
+    "known_as": "Guillermo Camarena",
+    "profession": "Inventor of Color Television",
+    "note": "Mexican engineer who invented the trichromatic field-sequential color television system in 1940. Licensed ham radio operator. Silent key 1965.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Guillermo_Gonz%C3%A1lez_Camarena",
+    "icon": "📡"
+  },
+  "W1AW": {
+    "type": "special",
+    "name": "ARRL Headquarters Station (W1AW)",
+    "note": "Official station of the American Radio Relay League in Newington, CT. Named after ARRL co-founder Hiram Percy Maxim. Transmits code practice and bulletins daily.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Hiram_Percy_Maxim",
+    "icon": "📻"
+  },
+  "GB2SM": {
+    "type": "special",
+    "name": "Science Museum London",
+    "note": "Permanent amateur radio station at the London Science Museum.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Science_Museum,_London",
+    "icon": "📡"
+  },
+  "MGY": {
+    "type": "special",
+    "name": "RMS Titanic (Historic Wireless Station)",
+    "note": "Marconi wireless station aboard the RMS Titanic. On April 14-15, 1912, operators Jack Phillips and Harold Bride transmitted the historic CQD and SOS distress signals during the sinking. One of the most famous radio events in history.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Radio_on_the_RMS_Titanic",
+    "icon": "⚓"
+  },
+  "NSS": {
+    "type": "special",
+    "name": "Annapolis Naval Radio Station (Historic)",
+    "note": "Massive US Navy communication station active from WWI through the Cold War. Transmitted orders to naval vessels worldwide.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Annapolis_Naval_Radio_Station",
+    "icon": "📡"
+  },
+  "WSM": {
+    "type": "special",
+    "name": "WSM — Grand Ole Opry Station",
+    "note": "Clear-channel AM station (650 kHz) in Nashville, TN, home of the Grand Ole Opry. Instrumental in popularizing country music nationwide since 1925.",
+    "wikipedia": "https://en.wikipedia.org/wiki/WSM_(AM)",
+    "icon": "📻"
+  },
+  "KDKA": {
+    "type": "special",
+    "name": "KDKA — World's First Commercial Radio Station",
+    "note": "The world's first commercially licensed radio station, operated by Westinghouse Electric in Pittsburgh, PA. First broadcast November 2, 1920 covering the Harding-Cox presidential election results.",
+    "wikipedia": "https://en.wikipedia.org/wiki/KDKA_(AM)",
+    "icon": "📻"
+  },
+  "WWV": {
+    "type": "special",
+    "name": "NIST Time Signal Station WWV",
+    "note": "NIST official time and frequency standard in Fort Collins, CO. Transmits on 2.5, 5, 10, 15, 20 MHz continuously since 1923.",
+    "wikipedia": "https://en.wikipedia.org/wiki/WWV_(radio_station)",
+    "icon": "🕐"
+  },
+  "WWVH": {
+    "type": "special",
+    "name": "NIST Time Signal Station WWVH",
+    "note": "NIST official time and frequency station in Kauai, HI. Female voice announcer distinguishes it from WWV. Transmits on 2.5, 5, 10, 15 MHz.",
+    "wikipedia": "https://en.wikipedia.org/wiki/WWVH",
+    "icon": "🕐"
+  },
+  "WWVB": {
+    "type": "special",
+    "name": "NIST Time Signal Station WWVB",
+    "note": "NIST 60 kHz time signal in Fort Collins, CO. Used to synchronize atomic clocks and radio-controlled clocks across North America.",
+    "wikipedia": "https://en.wikipedia.org/wiki/WWVB",
+    "icon": "🕐"
+  },
+  "CHU": {
+    "type": "special",
+    "name": "NRC Time Signal Station CHU",
+    "note": "Canadian time signal station operated by the National Research Council in Ottawa. Transmits on 3.33, 7.85, 14.67 MHz.",
+    "wikipedia": "https://en.wikipedia.org/wiki/CHU_(radio_station)",
+    "icon": "🕐"
+  },
+  "WW2CV": {
+    "type": "special",
+    "name": "USS Intrepid (Museum Ship)",
+    "note": "WWII Essex-class aircraft carrier museum in New York City. Apollo 11 recovery ship. Grid: FN20gb.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Intrepid_(CV-11)",
+    "icon": "⚓"
+  },
+  "NJ2BB": {
+    "type": "special",
+    "name": "USS New Jersey (Museum Ship)",
+    "note": "Iowa-class battleship museum in Camden, NJ. Most decorated battleship in US Navy history. Grid: FM29jw.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_New_Jersey_(BB-62)",
+    "icon": "⚓"
+  },
+  "NI4BK": {
+    "type": "special",
+    "name": "USS North Carolina (Museum Ship)",
+    "note": "WWII battleship museum in Wilmington, NC. First US battleship completed during WWII. Grid: FM04ff.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_North_Carolina_(BB-55)",
+    "icon": "⚓"
+  },
+  "N4WIS": {
+    "type": "special",
+    "name": "USS Wisconsin (Museum Ship)",
+    "note": "Iowa-class battleship museum in Norfolk, VA. Last battleship built by the US Navy. Grid: FM16ts.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Wisconsin_(BB-64)",
+    "icon": "⚓"
+  },
+  "N2USS": {
+    "type": "special",
+    "name": "USS Slater (Museum Ship)",
+    "note": "WWII destroyer escort museum in Albany, NY. Only restored destroyer escort afloat in the US. Grid: FN32dq.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Slater_(DE-766)",
+    "icon": "⚓"
+  },
+  "WA4USN": {
+    "type": "special",
+    "name": "USS Yorktown (Museum Ship)",
+    "note": "WWII Essex-class carrier museum in Mount Pleasant, SC. Earned 11 battle stars. Grid: FM02os.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Yorktown_(CV-10)",
+    "icon": "⚓"
+  },
+  "NE1PL": {
+    "type": "special",
+    "name": "USS Massachusetts (Museum Ship)",
+    "note": "WWII battleship museum in Fall River, MA. Fired first and last US naval shots in European theater. Grid: FN41or.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Massachusetts_(BB-59)",
+    "icon": "⚓"
+  },
+  "NJ4I": {
+    "type": "special",
+    "name": "USS Torsk (Museum Ship)",
+    "note": "WWII submarine museum in Baltimore, MD. Sank last Japanese combatant vessels of WWII. Grid: FM19hf.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Torsk_(SS-423)",
+    "icon": "⚓"
+  },
+  "KH6BB": {
+    "type": "special",
+    "name": "USS Missouri (Museum Ship)",
+    "note": "Iowa-class battleship museum at Pearl Harbor, HI. Site of Japanese surrender September 2, 1945. Grid: BL11cj. POTA: US-4428.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Missouri_(BB-63)",
+    "icon": "⚓"
+  },
+  "NE6PP": {
+    "type": "special",
+    "name": "USS Iowa (Museum Ship)",
+    "note": "Iowa-class battleship museum in Los Angeles, CA. Served in WWII, Korea, and Cold War. Grid: DM03to.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Iowa_(BB-61)",
+    "icon": "⚓"
+  },
+  "NI6IW": {
+    "type": "special",
+    "name": "USS Midway (Museum Ship)",
+    "note": "Aircraft carrier museum in San Diego, CA. Longest-serving US carrier of the 20th century (1945-1992). Grid: DM12jw.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Midway_(CV-41)",
+    "icon": "⚓"
+  },
+  "NB6GC": {
+    "type": "special",
+    "name": "USS Hornet (Museum Ship)",
+    "note": "WWII Essex-class carrier museum in Alameda, CA. Recovery ship for Apollo 11 and Apollo 12. Grid: CM87ut.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Hornet_(CV-12)",
+    "icon": "⚓"
+  },
+  "NJ6VT": {
+    "type": "special",
+    "name": "USS Pampanito (Museum Ship)",
+    "note": "WWII submarine museum in San Francisco, CA. Sank 6 Japanese ships. Grid: CM87uu. POTA: US-0134.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Pampanito_(SS-383)",
+    "icon": "⚓"
+  },
+  "NS7DD": {
+    "type": "special",
+    "name": "USS Turner Joy (Museum Ship)",
+    "note": "Destroyer museum in Bremerton, WA. Involved in the Gulf of Tonkin incident (1964). Grid: CN87tm.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Turner_Joy_(DD-951)",
+    "icon": "⚓"
+  },
+  "W5KID": {
+    "type": "special",
+    "name": "USS Kidd (Museum Ship)",
+    "note": "WWII destroyer museum in Baton Rouge, LA. Known as The Pirate of the Pacific. Grid: EM30dl.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Kidd_(DD-661)",
+    "icon": "⚓"
+  },
+  "K5XOM": {
+    "type": "special",
+    "name": "USS Alabama (Museum Ship)",
+    "note": "WWII battleship museum in Mobile, AL. Earned 9 battle stars. Grid: EM50eq.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Alabama_(BB-60)",
+    "icon": "⚓"
+  },
+  "W5R": {
+    "type": "special",
+    "name": "USS Razorback (Museum Ship)",
+    "note": "WWII submarine museum in North Little Rock, AR. Served in both US and Turkish navies. Grid: EM34tr.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Razorback_(SS-394)",
+    "icon": "⚓"
+  },
+  "WW2SUB": {
+    "type": "special",
+    "name": "USS Batfish (Museum Ship)",
+    "note": "WWII Balao-class submarine museum in Muskogee, OK. Sank three Japanese submarines in 76 hours, a record. Also operated as WW2SUB for USS Cavalla.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Batfish_(SS-310)",
+    "icon": "⚓"
+  },
+  "WW2R": {
+    "type": "special",
+    "name": "USS Stewart (Museum Ship)",
+    "note": "WWII destroyer escort museum in Galveston, TX. Grid: EL29gh.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Stewart_(DE-238)",
+    "icon": "⚓"
+  },
+  "GB2BP": {
+    "type": "special",
+    "name": "HMS Belfast (Museum Ship)",
+    "note": "WWII light cruiser museum on the Thames in London. Participated in D-Day bombardment. Grid: IO91om. IOTA: EU-120.",
+    "wikipedia": "https://en.wikipedia.org/wiki/HMS_Belfast_(C35)",
+    "icon": "⚓"
+  },
+  "VA3WWV": {
+    "type": "special",
+    "name": "HMCS Haida (Museum Ship)",
+    "note": "WWII destroyer museum in Hamilton, ON, Canada. Most decorated warship in Canadian naval history. Grid: FN03ch. POTA: CA-0182.",
+    "wikipedia": "https://en.wikipedia.org/wiki/HMCS_Haida_(G63)",
+    "icon": "⚓"
+  },
+  "CY3S": {
+    "type": "special",
+    "name": "HMCS Sackville (Museum Ship)",
+    "note": "WWII corvette museum in Halifax, NS, Canada. Only surviving Canadian WWII corvette. Grid: FN84dq.",
+    "wikipedia": "https://en.wikipedia.org/wiki/HMCS_Sackville_(K181)",
+    "icon": "⚓"
+  },
+  "VK2VMP": {
+    "type": "special",
+    "name": "HMAS Vampire (Museum Ship)",
+    "note": "Destroyer museum at the Australian National Maritime Museum, Sydney. Grid: QF56id.",
+    "wikipedia": "https://en.wikipedia.org/wiki/HMAS_Vampire_(D11)",
+    "icon": "⚓"
+  },
+  "VK6SUB": {
+    "type": "special",
+    "name": "HMAS Ovens (Museum Ship)",
+    "note": "Oberon-class submarine museum in Fremantle, Western Australia. Grid: OF78ee.",
+    "wikipedia": "https://en.wikipedia.org/wiki/HMAS_Ovens_(S70)",
+    "icon": "⚓"
+  },
+  "DL0DMB": {
+    "type": "special",
+    "name": "U-995 Submarine Museum",
+    "note": "WWII Type VIIC U-boat museum in Laboe, Germany. Only surviving Type VIIC submarine. Grid: JO54al.",
+    "wikipedia": "https://en.wikipedia.org/wiki/U-995",
+    "icon": "⚓"
+  },
+  "R1LK": {
+    "type": "special",
+    "name": "Krasin Icebreaker Museum",
+    "note": "Historic steam-powered icebreaker museum in St. Petersburg, Russia. Grid: KO59cw.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Krasin_(icebreaker)",
+    "icon": "⚓"
+  },
+  "SZ1AB": {
+    "type": "special",
+    "name": "HS Georgios Averof (Museum Ship)",
+    "note": "Historic armored cruiser museum in Athens, Greece. Only surviving pre-dreadnought warship in the world. Grid: KM17ux.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Greek_cruiser_Georgios_Averof",
+    "icon": "⚓"
+  },
+  "W3E": {
+    "type": "special",
+    "name": "Smithsonian Udvar-Hazy Aerospace Center",
+    "note": "National Air and Space Museum annex near Dulles Airport, Chantilly, VA. Houses Space Shuttle Discovery and the Enola Gay. Grid: FM18lw.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Steven_F._Udvar-Hazy_Center",
+    "icon": "✈️"
+  },
+ "K3S": {
+	"type": "special",
+	"name": "Nuclear Ship Savannah ARC",
+	"note": "Amateur Radio Club aboard the NS Savannah, the world's first nuclear-powered merchant ship, now a museum ship in Baltimore, MD.",
+	"wikipedia": "https://en.wikipedia.org/wiki/NS_Savannah",
+	"icon": "⚓"
+  },
+  "W7GV": {
+    "type": "special",
+    "name": "Titan Missile Museum",
+    "note": "Only remaining intact Titan II ICBM launch site in Green Valley, AZ. National Historic Landmark. Grid: DM41ov.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Titan_Missile_Museum",
+    "icon": "🚀"
+  },
+  "W0MA": {
+    "type": "special",
+    "name": "National Museum of Transportation",
+    "note": "Large transportation museum in St. Louis, MO featuring locomotives, cars, and aircraft. Grid: EM48ho.",
+    "wikipedia": "https://en.wikipedia.org/wiki/National_Museum_of_Transportation",
+    "icon": "🚂"
+  },
+  "K0MAN": {
+    "type": "special",
+    "name": "Strategic Air Command & Aerospace Museum",
+    "note": "Aviation and space museum in Ashland, NE featuring B-52, SR-71, and other historic aircraft. Grid: EN11cb.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Strategic_Air_Command_%26_Aerospace_Museum",
+    "icon": "✈️"
+  },
+  "VE9BELL": {
+    "type": "special",
+    "name": "Alexander Graham Bell Museum",
+    "note": "Museum dedicated to Bell's later life and inventions in Baddeck, NS, Canada. Grid: FN86ec. POTA: CA-0010. IOTA: NA-010.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Alexander_Graham_Bell_National_Historic_Site",
+    "icon": "📡"
+  },
+  "IY4FGM": {
+    "type": "special",
+    "name": "Guglielmo Marconi Historical Museum",
+    "note": "Museum at Marconi's birthplace in Pontecchio Marconi, Italy where he conducted early radio experiments. Grid: JN54qk.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Guglielmo_Marconi",
+    "icon": "📡"
+  },
+  "K2AMH": {
+    "type": "person",
+    "name": "Robert Moog",
+    "known_as": "Bob Moog",
+    "profession": "Inventor of the Moog Synthesizer",
+    "note": "Engineer and inventor who created the Moog synthesizer, revolutionizing electronic music. Silent key 2005.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Robert_Moog",
+    "icon": "📡"
+  },
+  "K2GL": {
+    "type": "person",
+    "name": "Hazard Reeves",
+    "known_as": "Hazard Reeves",
+    "profession": "Inventor of Stereo Sound System",
+    "note": "Inventor of the modern stereo sound system used in theaters and broadcasting. Silent key 1986.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Hazard_Reeves",
+    "icon": "📡"
+  },
+  "W2BML": {
+    "type": "person",
+    "name": "Harold Beverage",
+    "known_as": "Harold Beverage",
+    "profession": "Inventor of the Beverage Antenna",
+    "note": "Radio engineer who invented the Beverage antenna (wave antenna) in 1921, still widely used today. Silent key 1993.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Harold_Beverage",
+    "icon": "📡"
+  },
+  "K2ORS": {
+    "type": "person",
+    "name": "Jean Shepherd",
+    "known_as": "Jean Shepherd",
+    "profession": "Radio Raconteur / Author",
+    "note": "Beloved radio storyteller, humorist, and author. Narrator and writer of A Christmas Story. Long-time ham radio enthusiast. Silent key 1999.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Jean_Shepherd",
+    "icon": "⭐"
+  },
+  "KB1NXP": {
+    "type": "person",
+    "name": "John Baldacci",
+    "known_as": "John Baldacci",
+    "profession": "Governor of Maine (2003-2011)",
+    "note": "Former Governor of Maine, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/John_Baldacci",
+    "icon": "⭐"
+  },
+  "K4LIB": {
+    "type": "person",
+    "name": "Arthur Godfrey",
+    "known_as": "Arthur Godfrey",
+    "profession": "TV / Radio Personality",
+    "note": "Legendary radio and TV personality, one of the most powerful figures in American broadcasting in the 1950s. Licensed amateur radio operator. Silent key 1983.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Arthur_Godfrey",
+    "icon": "⭐"
+  },
+  "K4EB": {
+    "type": "person",
+    "name": "Larry Junstrom",
+    "known_as": "Larry Junstrom",
+    "profession": "Musician / 38 Special / Lynyrd Skynyrd",
+    "note": "Bass player for 38 Special and founding member of Lynyrd Skynyrd. Licensed amateur radio operator. Silent key 2019.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Larry_Junstrom",
+    "icon": "🎵"
+  },
+  "KF5BOX": {
+    "type": "person",
+    "name": "Doug Wheelock",
+    "known_as": "Doug Wheelock",
+    "profession": "NASA Astronaut / ISS Commander",
+    "note": "Commander of ISS Expedition 25, conducted ARISS school contacts from the station. Active ham operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Doug_Wheelock",
+    "icon": "🛸"
+  },
+  "K5CSG": {
+    "type": "person",
+    "name": "Peggy Sue Gerron",
+    "known_as": "Peggy Sue Gerron",
+    "profession": "Inspiration for Buddy Holly's Peggy Sue",
+    "note": "The real Peggy Sue behind Buddy Holly's 1957 hit song, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Peggy_Sue_(song)",
+    "icon": "⭐"
+  },
+  "N5QWL": {
+    "type": "person",
+    "name": "Jay Apt",
+    "known_as": "Jay Apt",
+    "profession": "NASA Astronaut / Physicist",
+    "note": "NASA astronaut who flew on four Space Shuttle missions, conducted ham radio contacts from space. Professor at Carnegie Mellon University.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Jay_Apt",
+    "icon": "🛸"
+  },
+  "N5RAX": {
+    "type": "person",
+    "name": "Linda Godwin",
+    "known_as": "Linda Godwin",
+    "profession": "NASA Astronaut / Physicist",
+    "note": "NASA astronaut who flew on four Space Shuttle missions including a docking with Mir. Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Linda_Godwin",
+    "icon": "🛸"
+  },
+  "W6EZV": {
+    "type": "person",
+    "name": "Curtis LeMay",
+    "known_as": "General Curtis LeMay",
+    "profession": "USAF General / 1968 VP Candidate",
+    "note": "USAF General, Strategic Air Command chief, and 1968 American Independent Party vice-presidential candidate with George Wallace. Licensed amateur radio operator. Silent key 1990.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Curtis_LeMay",
+    "icon": "⭐"
+  },
+  "KA6HVK": {
+    "type": "person",
+    "name": "Burl Ives",
+    "known_as": "Burl Ives",
+    "profession": "Singer / Actor",
+    "note": "Oscar-winning actor and folk singer, known for A Holly Jolly Christmas and Cat on a Hot Tin Roof. Licensed amateur radio operator. Silent key 1995.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Burl_Ives",
+    "icon": "🎭"
+  },
+  "N6KGB": {
+    "type": "person",
+    "name": "Stewart Granger",
+    "known_as": "Stewart Granger",
+    "profession": "Actor",
+    "note": "British-American film actor known for adventure films of the 1950s, licensed amateur radio operator. Silent key 1993.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Stewart_Granger",
+    "icon": "🎭"
+  },
+  "KB6LQS": {
+    "type": "person",
+    "name": "Dick Rutan",
+    "known_as": "Dick Rutan",
+    "profession": "Aviator / Voyager Pilot",
+    "note": "Pilot who with Jeana Yeager completed the first nonstop unrefueled circumnavigation of the globe (Voyager, 1986). Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Dick_Rutan",
+    "icon": "✈️"
+  },
+  "WB6RER": {
+    "type": "person",
+    "name": "Andy Devine",
+    "known_as": "Andy Devine",
+    "profession": "Actor / Comedian",
+    "note": "Western film actor known for his distinctive gravelly voice, appeared in hundreds of films. Licensed amateur radio operator. Silent key 1977.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Andy_Devine",
+    "icon": "🎭"
+  },
+  "WB4APR": {
+    "type": "person",
+    "name": "Bob Bruninga",
+    "known_as": "Bob Bruninga",
+    "profession": "Inventor of APRS",
+    "note": "US Naval Academy engineer who invented APRS (Automatic Packet Reporting System) in 1992 — used worldwide for real-time digital position and communications. Silent key 2022.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Bob_Bruninga",
+    "icon": "📡"
+  },
+  "9DRV": {
+    "type": "person",
+    "name": "David Packard",
+    "known_as": "David Packard",
+    "profession": "Co-Founder of Hewlett-Packard",
+    "note": "Co-founded Hewlett-Packard with Bill Hewlett in a Palo Alto garage in 1939. Deputy Secretary of Defense 1969-1971. Licensed amateur radio operator. Silent key 1996.",
+    "wikipedia": "https://en.wikipedia.org/wiki/David_Packard",
+    "icon": "⭐"
+  },
+  "W0CXX": {
+    "type": "person",
+    "name": "Art Collins",
+    "known_as": "Art Collins",
+    "profession": "Founder of Collins Radio",
+    "note": "Founded Collins Radio Company in 1933, manufacturer of legendary amateur and military radio equipment. Silent key 1987.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Art_Collins_(engineer)",
+    "icon": "📡"
+  },
+  "RV3DW": {
+    "type": "person",
+    "name": "Sergei Avdeyev",
+    "known_as": "Sergei Avdeyev",
+    "profession": "Russian Cosmonaut",
+    "note": "Russian cosmonaut who holds the record for cumulative time in space (747 days across three missions to Mir space station). Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Sergei_Avdeyev",
+    "icon": "🛸"
+  },
+  "DG1KIM": {
+    "type": "person",
+    "name": "Ulrich Walter",
+    "known_as": "Ulrich Walter",
+    "profession": "German Astronaut / Professor",
+    "note": "German astronaut who flew on STS-55 (Spacelab D-2, 1993). Now professor of astronautics at TU Munich. Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Ulrich_Walter",
+    "icon": "🛸"
+  },
+  "9N1MM": {
+    "type": "person",
+    "name": "Father Marshall Moran",
+    "known_as": "Father Moran",
+    "profession": "Jesuit Priest / Educator",
+    "note": "Jesuit priest and educator who spent decades in Nepal, licensed amateur radio operator. Used radio to connect Nepal with the outside world.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Marshall_Moran",
+    "icon": "⭐"
+  },
+  "NS3T": {
+    "type": "person",
+    "name": "Jamie Dupree",
+    "known_as": "Jamie Dupree",
+    "profession": "Radio News Correspondent",
+    "note": "Cox Media Group Washington DC correspondent, veteran Capitol Hill reporter, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Jamie_Dupree",
+    "icon": "⭐"
+  },
+  "K6DUE": {
+    "type": "person",
+    "name": "Roy Neal",
+    "known_as": "Roy Neal",
+    "profession": "NBC News Correspondent / TV Personality",
+    "note": "NBC News correspondent and space program reporter, licensed amateur radio operator. Active ARRL member. Silent key 2014.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Roy_Neal",
+    "icon": "⭐"
+  },
+  "W6APW": {
+    "type": "person",
+    "name": "Herbert Hoover III",
+    "known_as": "Pete Hoover",
+    "profession": "AMSAT Fundraiser / ARRL",
+    "note": "Herbert Pete Hoover III, grandson of President Herbert Hoover, major AMSAT fundraiser and ARRL volunteer.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Herbert_Hoover",
+    "icon": "⭐"
+  },
+  "KA6UXR": {
+    "type": "person",
+    "name": "Alexander Comfort",
+    "known_as": "Dr. Alexander Comfort",
+    "profession": "Author / Physician",
+    "note": "British physician and author, best known for writing The Joy of Sex (1972). Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Alex_Comfort",
+    "icon": "⭐"
+  },
+  "W6FZZ": {
+    "type": "person",
+    "name": "Samuel F.B. Morse III",
+    "known_as": "Samuel Morse III",
+    "profession": "Great-grandson of Morse Code inventor",
+    "note": "Great-grandson of Samuel F.B. Morse, inventor of Morse code and the telegraph. Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Samuel_Morse",
+    "icon": "📡"
+  },
+  "KI6M": {
+    "type": "person",
+    "name": "Stu Gilliam",
+    "known_as": "Stu Gilliam",
+    "profession": "Comedian / Actor",
+    "note": "Comedian and actor. Also licensed as WA6FQA.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Stu_Gilliam",
+    "icon": "🎭"
+  },
+  "KD6OY": {
+    "type": "person",
+    "name": "Garry Shandling",
+    "known_as": "Garry Shandling",
+    "profession": "Comedian / Actor",
+    "note": "Stand-up comedian and actor, creator of The Larry Sanders Show. Also licensed as WA7BKG. Silent key 2016.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Garry_Shandling",
+    "icon": "🎭"
+  },
+  "NK7U": {
+    "type": "person",
+    "name": "Joe Rudi",
+    "known_as": "Joe Rudi",
+    "profession": "Major League Baseball Player",
+    "note": "Oakland Athletics outfielder, three-time World Series champion (1972-74), three-time Gold Glove winner. Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Joe_Rudi",
+    "icon": "⭐"
+  },
+  "W0FQY": {
+    "type": "person",
+    "name": "Carl Mosley",
+    "known_as": "Carl Mosley",
+    "profession": "Founder of Mosley Electronics",
+    "note": "Founded Mosley Electronics, manufacturer of amateur radio antennas. Pioneer in beam antenna design.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Mosley_Electronics",
+    "icon": "📡"
+  },
+  "W8OK": {
+    "type": "person",
+    "name": "Frank Schwab",
+    "known_as": "Frank Schwab",
+    "profession": "Mr. Hamvention",
+    "note": "Legendary organizer of Hamvention, the world's largest amateur radio gathering in Dayton, Ohio. Known as Mr. Hamvention.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Hamvention",
+    "icon": "📻"
+  },
+  "WA5AVA": {
+    "type": "person",
+    "name": "Clyde Clifford",
+    "known_as": "Clyde Clifford / Beaker Street",
+    "profession": "Radio Host / DJ",
+    "note": "Radio personality who hosted the legendary Beaker Street late-night rock program on KAAY Little Rock in the late 1960s-70s. Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/KAAY",
+    "icon": "⭐"
+  },
+  "N4KET": {
+    "type": "person",
+    "name": "David French",
+    "known_as": "David French",
+    "profession": "CNN News Anchor",
+    "note": "CNN news anchor, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/CNN",
+    "icon": "⭐"
+  },
+  "KA7EVD": {
+    "type": "person",
+    "name": "Donnie Osmond",
+    "known_as": "Donnie Osmond",
+    "profession": "Singer / Actor",
+    "note": "Singer and actor, formerly licensed as KA7EVD (now expired). License held by WD4SKT is a different person.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Donnie_Osmond",
+    "icon": "🎵"
+  },
+  "W6BNB": {
+    "type": "person",
+    "name": "Robert Shrader",
+    "known_as": "Robert Shrader",
+    "profession": "Author / Electronics Educator",
+    "note": "Author of Electronic Communications, the definitive textbook used in electronics and radio education for decades.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Electronic_communication",
+    "icon": "📡"
+  },
+  "8CR": {
+    "type": "person",
+    "name": "Powell Crosley Jr.",
+    "known_as": "Powell Crosley",
+    "profession": "Broadcasting Pioneer / WLW Founder",
+    "note": "Founded WLW (the Nation's Station) in Cincinnati, manufactured Crosley radios and appliances, owned the Cincinnati Reds. Pioneer of clear-channel broadcasting. Silent key 1961.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Powel_Crosley_Jr.",
+    "icon": "📻"
+  },
+  "TI2DR": {
+    "type": "person",
+    "name": "David Ruben",
+    "known_as": "Dr. David Ruben",
+    "profession": "Physician / Author",
+    "note": "Physician and author, best known for Everything You Always Wanted to Know About Sex (1969). Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/David_Reuben_(author)",
+    "icon": "⭐"
+  },
+  "ZK1AN": {
+    "type": "person",
+    "name": "Sir Thomas Davis",
+    "known_as": "Sir Thomas Davis",
+    "profession": "Premier of Cook Islands",
+    "note": "Former Premier of the Cook Islands, physician, and author. Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Tom_Davis_(politician)",
+    "icon": "⭐"
+  },
+  "W4LAA": {
+    "type": "person",
+    "name": "Paul Kangas",
+    "known_as": "Paul Kangas",
+    "profession": "PBS Nightly Business Report Co-Anchor",
+    "note": "Co-anchor of PBS Nightly Business Report for over 30 years. Licensed amateur radio operator. Silent key 2011.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Paul_Kangas",
+    "icon": "⭐"
+  },
+  "WD4LZC": {
+    "type": "person",
+    "name": "Larnell Harris",
+    "known_as": "Larnell Harris",
+    "profession": "Country & Christian Music Singer",
+    "note": "Country and Christian music recording artist, licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Larnell_Harris",
+    "icon": "🎵"
+  },
+  "K3SAV": {
+    "type": "special",
+    "name": "NS Savannah (Museum Ship)",
+    "note": "First nuclear-powered merchant ship in the world. Museum ship at the Port of Baltimore, MD. Operated 1962-1972. National Historic Landmark.",
+    "wikipedia": "https://en.wikipedia.org/wiki/NS_Savannah",
+    "icon": "⚓"
+  },
+  "W1SSB": {
+    "type": "special",
+    "name": "USS Salem (Museum Ship)",
+    "note": "Heavy cruiser museum ship in Quincy, MA. Last all-gun heavy cruiser built. Now the United States Naval Shipbuilding Museum.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Salem_(CA-139)",
+    "icon": "⚓"
+  },
+  "N3BBQ": {
+    "type": "special",
+    "name": "USS Constellation (Museum Ship)",
+    "note": "Sloop-of-war museum ship in Baltimore, MD. Last all-sail warship designed and built by the US Navy (1854).",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Constellation_(1854)",
+    "icon": "⚓"
+  },
+  "W1GSL": {
+    "type": "special",
+    "name": "USS Cassin Young (Museum Ship)",
+    "note": "WWII Fletcher-class destroyer museum at the Boston National Historical Park, MA. POTA eligible.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Cassin_Young_(DD-793)",
+    "icon": "⚓"
+  },
+  "K5TBG": {
+    "type": "special",
+    "name": "USS Texas (Museum Ship)",
+    "note": "Dreadnought battleship museum ship, the last surviving WWI-era dreadnought. Undergoing restoration. Texas City, TX.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Texas_(BB-35)",
+    "icon": "⚓"
+  },
+  "N0ESP": {
+    "type": "special",
+    "name": "USS South Dakota (Memorial)",
+    "note": "WWII battleship memorial in Sioux Falls, SD. The ship itself was scrapped but the memorial preserves her history. Also activated as N0EBC.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_South_Dakota_(BB-57)",
+    "icon": "⚓"
+  },
+  "K8GUN": {
+    "type": "special",
+    "name": "USS Cod (Museum Ship)",
+    "note": "WWII Gato-class submarine museum in Cleveland, OH. Only submarine museum ship with all original equipment intact.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Cod_(SS-224)",
+    "icon": "⚓"
+  },
+  "W3EAX": {
+    "type": "special",
+    "name": "USS Constellation (Frigate, Museum)",
+    "note": "Frigate museum at the Inner Harbor, Baltimore, MD.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Constellation_(1854)",
+    "icon": "⚓"
+  },
+  "VE2CSL": {
+    "type": "special",
+    "name": "Submarine Onondaga (Museum Ship)",
+    "note": "Oberon-class submarine museum at Musée Maritime de la Pointe-au-Père, Rimouski, QC, Canada. Only submarine museum in Eastern Canada.",
+    "wikipedia": "https://en.wikipedia.org/wiki/HMCS_Onondaga_(S73)",
+    "icon": "⚓"
+  },
+  "W1ZE": {
+    "type": "person",
+    "name": "Irving Vermilya",
+    "known_as": "Irving Vermilya",
+    "profession": "First Licensed Radio Amateur in the US",
+    "note": "Holder of the first amateur radio license issued in the United States.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Amateur_radio_in_the_United_States",
+    "icon": "📡"
+  },
+  "W2SGG": {
+    "type": "person",
+    "name": "Robert Cusumano",
+    "known_as": "Robert Cusumano",
+    "profession": "Co-inventor of Printed Circuits",
+    "note": "Co-inventor of the printed circuit board, foundational technology for all modern electronics. Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Printed_circuit_board",
+    "icon": "📡"
+  },
+  "NE2Q": {
+    "type": "person",
+    "name": "Jay Kolinsky",
+    "known_as": "Jay Kolinsky",
+    "profession": "Inventor of the Electronic Siren",
+    "note": "Inventor of the electronic siren used in emergency vehicles. Licensed amateur radio operator.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Siren_(alarm)",
+    "icon": "📡"
+  },
+  "W0WY": {
+    "type": "person",
+    "name": "Yuri Gagarin",
+    "known_as": "Yuri Gagarin",
+    "profession": "First Human in Space / Soviet Cosmonaut",
+    "note": "First human to journey into outer space (April 12, 1961). Licensed amateur radio operator. Silent key 1968.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Yuri_Gagarin",
+    "icon": "🛸"
+  },
+  "UA1LO": {
+    "type": "person",
+    "name": "Yuri Gagarin",
+    "known_as": "Yuri Gagarin",
+    "profession": "First Human in Space / Soviet Cosmonaut",
+    "note": "First human to journey into outer space (April 12, 1961). Licensed amateur radio operator under Soviet callsign. Silent key 1968.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Yuri_Gagarin",
+    "icon": "🛸"
+  },
+  "W5LEX": {
+    "type": "special",
+    "name": "USS Lexington (Museum Ship)",
+    "note": "Essex-class aircraft carrier museum in Corpus Christi, TX. Known as 'The Blue Ghost'. Served WWII through Cold War.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Lexington_(CV-16)",
+    "icon": "⚓"
+  },
+  "NI6BB": {
+    "type": "special",
+    "name": "USS Iowa (Museum Ship)",
+    "note": "Iowa-class battleship museum in San Pedro (Los Angeles), CA. Also operated as NE6PP.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Iowa_(BB-61)",
+    "icon": "⚓"
+  },
+  "NE4MW": {
+    "type": "special",
+    "name": "USS Alabama (Museum Ship)",
+    "note": "WWII South Dakota-class battleship museum in Mobile, AL. Also operated as K5XOM.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Alabama_(BB-60)",
+    "icon": "⚓"
+  },
+  "NA5DV": {
+    "type": "special",
+    "name": "USS Texas (Museum Ship)",
+    "note": "WWI-era dreadnought battleship museum in Baytown, TX. Last surviving WWI dreadnought battleship. Recently restored.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Texas_(BB-35)",
+    "icon": "⚓"
+  },
+  "WW2OK": {
+    "type": "special",
+    "name": "USS Oklahoma Mast Memorial",
+    "note": "Memorial to USS Oklahoma (battleship sunk at Pearl Harbor) in Muskogee, OK.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Oklahoma_(BB-37)",
+    "icon": "⚓"
+  },
+  "W4BSF": {
+    "type": "special",
+    "name": "USS Tennessee Museum",
+    "note": "Battleship museum memorial in Oneida, TN. Special event station.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Tennessee_(BB-43)",
+    "icon": "⚓"
+  },
+  "K8E": {
+    "type": "special",
+    "name": "SS Col. James M. Schoonmaker (Museum Ship)",
+    "note": "Historic Great Lakes bulk carrier museum in Toledo, OH. Largest ship on the Great Lakes when built (1911).",
+    "wikipedia": "https://en.wikipedia.org/wiki/SS_Colonel_James_M._Schoonmaker",
+    "icon": "⚓"
+  },
+  "DL0MCM": {
+    "type": "special",
+    "name": "MV Dresden (Museum Ship)",
+    "note": "Cargo ship museum in Rostock, Germany.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Rostock",
+    "icon": "⚓"
+  },
+  "DL0MFH": {
+    "type": "special",
+    "name": "MV Cap San Diego (Museum Ship)",
+    "note": "General cargo ship museum in Hamburg, Germany. One of the largest preserved cargo ships in the world.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Cap_San_Diego",
+    "icon": "⚓"
+  },
+  "KN4RAM": {
+    "type": "special",
+    "name": "CSS Neuse (Museum Ship)",
+    "note": "Civil War Confederate ironclad gunboat museum in Kinston, NC. One of only two surviving Confederate ironclads.",
+    "wikipedia": "https://en.wikipedia.org/wiki/CSS_Neuse",
+    "icon": "⚓"
+  },
+  "NE6JP": {
+    "type": "special",
+    "name": "USS Potomac (Museum Ship)",
+    "note": "USCG Cutter / Presidential Yacht used by FDR, known as the Floating White House. Museum in Oakland, CA.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Potomac_(AG-25)",
+    "icon": "⚓"
+  },
+  "N1SLM": {
+    "type": "special",
+    "name": "USS Salem (Museum Ship)",
+    "note": "Heavy cruiser museum in Quincy, MA. Last all-gun heavy cruiser built by the US Navy. Also operated as W1SSB.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Salem_(CA-139)",
+    "icon": "⚓"
+  },
+  "W2PE": {
+    "type": "special",
+    "name": "USS Little Rock (Museum Ship)",
+    "note": "CLG-4 guided missile cruiser museum in Buffalo, NY. Last warship commissioned by the US Navy in WWII.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Little_Rock_(CLG-4)",
+    "icon": "⚓"
+  },
+  "WA3BAT": {
+    "type": "special",
+    "name": "USS Olympia (Museum Ship)",
+    "note": "Protected cruiser museum in Philadelphia, PA. Oldest steel-hulled warship still afloat. Carried Admiral Dewey at Battle of Manila Bay (1898).",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Olympia_(C-6)",
+    "icon": "⚓"
+  },
+  "WW2IND": {
+    "type": "special",
+    "name": "USS Indianapolis CA-35 Memorial",
+    "note": "Memorial to the heavy cruiser sunk by Japanese submarine in 1945 after delivering atomic bomb components. Indianapolis, IN.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Indianapolis_(CA-35)",
+    "icon": "⚓"
+  },
+  "WJ4DD": {
+    "type": "special",
+    "name": "USS Orleck (Museum Ship)",
+    "note": "WWII Gearing-class destroyer museum in Jacksonville, FL.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Orleck_(DD-886)",
+    "icon": "⚓"
+  },
+  "W2S": {
+    "type": "special",
+    "name": "USS The Sullivans (Museum Ship)",
+    "note": "WWII destroyer museum in Buffalo, NY. Named after the five Sullivan brothers killed in WWII. Inspired the movie Saving Private Ryan.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_The_Sullivans_(DD-537)",
+    "icon": "⚓"
+  },
+  "VE0NV": {
+    "type": "special",
+    "name": "HMCS Haida (Museum Ship)",
+    "note": "WWII Tribal-class destroyer museum in Hamilton, ON, Canada. Also operated as VA3WWV.",
+    "wikipedia": "https://en.wikipedia.org/wiki/HMCS_Haida_(G63)",
+    "icon": "⚓"
+  },
+  "NT4HI": {
+    "type": "special",
+    "name": "USS Laffey (Museum Ship)",
+    "note": "WWII Sumner-class destroyer museum in Charleston, SC. Survived being hit by 5 kamikazes and 3 bombs on April 16, 1945. Known as The Ship That Would Not Die.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Laffey_(DD-724)",
+    "icon": "⚓"
+  },
+  "WW2DD": {
+    "type": "special",
+    "name": "USS Cassin Young (Museum Ship)",
+    "note": "WWII Fletcher-class destroyer museum at Boston National Historical Park, MA. Also operated as W1GSL.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Cassin_Young_(DD-793)",
+    "icon": "⚓"
+  },
+  "WW2DEM": {
+    "type": "special",
+    "name": "USS Slater (Museum Ship)",
+    "note": "WWII Edsall-class destroyer escort museum in Albany, NY. Also operated as N2USS.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Slater_(DE-766)",
+    "icon": "⚓"
+  },
+  "N5FKP": {
+    "type": "special",
+    "name": "USS Stewart / USS Cavalla (Museum Ships)",
+    "note": "WWII destroyer escort and submarine museums in Galveston, TX. Seawolf Park.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Cavalla_(SS-244)",
+    "icon": "⚓"
+  },
+  "VE0CNM": {
+    "type": "special",
+    "name": "HMCS Sackville (Museum Ship)",
+    "note": "WWII Flower-class corvette museum in Halifax, NS, Canada. Also operated as CY3S.",
+    "wikipedia": "https://en.wikipedia.org/wiki/HMCS_Sackville_(K181)",
+    "icon": "⚓"
+  },
+  "K5BS": {
+    "type": "special",
+    "name": "SS Grandcamp Memorial",
+    "note": "Memorial to the French Liberty Ship whose cargo explosion caused the Texas City Disaster (1947), deadliest industrial accident in US history. Texas City, TX.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Texas_City_disaster",
+    "icon": "⚓"
+  },
+  "WA5DTK": {
+    "type": "special",
+    "name": "USS Houston Memorial",
+    "note": "Memorial to the heavy cruiser sunk in the Battle of Sunda Strait (1942). Houston, TX.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Houston_(CA-30)",
+    "icon": "⚓"
+  },
+  "W6RO": {
+    "type": "special",
+    "name": "RMS Queen Mary (Museum Ship)",
+    "note": "Famous ocean liner museum in Long Beach, CA. Served as a luxury liner and WWII troopship. Now a hotel and museum.",
+    "wikipedia": "https://en.wikipedia.org/wiki/RMS_Queen_Mary",
+    "icon": "⚓"
+  },
+  "K6JOB": {
+    "type": "special",
+    "name": "SS Jeremiah O'Brien (Museum Ship)",
+    "note": "WWII Liberty ship museum in San Francisco, CA. One of only two operational Liberty ships remaining. Participated in D-Day.",
+    "wikipedia": "https://en.wikipedia.org/wiki/SS_Jeremiah_O%27Brien",
+    "icon": "⚓"
+  },
+  "K8JWB": {
+    "type": "special",
+    "name": "SS John W. Brown (Museum Ship)",
+    "note": "WWII Liberty ship museum in Baltimore, MD. One of only two operational Liberty ships remaining.",
+    "wikipedia": "https://en.wikipedia.org/wiki/SS_John_W._Brown",
+    "icon": "⚓"
+  },
+  "W2AQ": {
+    "type": "special",
+    "name": "Lightship Ambrose (Museum Ship)",
+    "note": "Historic lightship museum on the East River in New York City. Guided ships into New York Harbor.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Lightship_Ambrose",
+    "icon": "⚓"
+  },
+  "NM8GS": {
+    "type": "special",
+    "name": "Lightship Huron (Museum Ship)",
+    "note": "Historic Great Lakes lightship museum in Port Huron, MI. Last remaining Great Lakes lightship.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Lightship_Huron",
+    "icon": "⚓"
+  },
+  "WW2LST": {
+    "type": "special",
+    "name": "USS LST-325 (Museum Ship)",
+    "note": "WWII tank landing ship museum in Evansville, IN. One of only two surviving WWII LSTs. Participated in D-Day.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_LST-325",
+    "icon": "⚓"
+  },
+  "N8LST": {
+    "type": "special",
+    "name": "LST-393 (Museum Ship)",
+    "note": "WWII tank landing ship museum in Muskegon, MI. One of only two surviving WWII LSTs.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_LST-393",
+    "icon": "⚓"
+  },
+  "W1WCC": {
+    "type": "special",
+    "name": "Chatham Radio / WCC Station",
+    "note": "Historic maritime radio station in Chatham, MA. Operated as WCC, one of the most important maritime communication stations on the US East Coast.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Chatham_Radio",
+    "icon": "📡"
+  },
+  "K6KPH": {
+    "type": "special",
+    "name": "Maritime Radio Historical Society / KPH",
+    "note": "Restored historic RCA maritime radio station at Point Reyes Station, CA. KPH was one of the most important ship-to-shore radio stations in the world.",
+    "wikipedia": "https://en.wikipedia.org/wiki/KPH_(maritime_radio_station)",
+    "icon": "📡"
+  },
+  "NB9QV": {
+    "type": "special",
+    "name": "USS Cobia (Museum Ship)",
+    "note": "WWII Gato-class submarine museum in Manitowoc, WI. Identical to USS Silversides. Built at the Manitowoc Shipbuilding Company.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Cobia_(SS-245)",
+    "icon": "⚓"
+  },
+  "N1S": {
+    "type": "special",
+    "name": "USS Nautilus (Museum Ship)",
+    "note": "World's first nuclear-powered submarine museum in Groton, CT. First vessel to complete a submerged transit of the North Pole (1958). National Historic Landmark.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Nautilus_(SSN-571)",
+    "icon": "⚓"
+  },
+  "N5R": {
+    "type": "special",
+    "name": "USS Razorback (Museum Ship)",
+    "note": "WWII submarine museum in North Little Rock, AR. Also operated as W5R.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Razorback_(SS-394)",
+    "icon": "⚓"
+  },
+  "K4DSR": {
+    "type": "special",
+    "name": "USS Drum (Museum Ship)",
+    "note": "WWII Tambor-class submarine museum in Mobile, AL. First US submarine to sink an enemy vessel in WWII. Earned 12 war patrol battle stars.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Drum_(SS-228)",
+    "icon": "⚓"
+  },
+  "NM1JY": {
+    "type": "special",
+    "name": "USS Albacore (Museum Ship)",
+    "note": "Experimental submarine museum in Portsmouth, NH. Pioneered the teardrop hull design used by all modern submarines.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Albacore_(AGSS-569)",
+    "icon": "⚓"
+  },
+  "W2C": {
+    "type": "special",
+    "name": "USS Croaker (Museum Ship)",
+    "note": "WWII Gato-class submarine museum in Buffalo, NY. Sank the Japanese cruiser Nagara.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Croaker_(SS-246)",
+    "icon": "⚓"
+  },
+  "W8COD": {
+    "type": "special",
+    "name": "USS Cod (Museum Ship)",
+    "note": "WWII Gato-class submarine museum in Cleveland, OH. Only submarine museum with all original equipment intact. Also operated as K8GUN.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Cod_(SS-224)",
+    "icon": "⚓"
+  },
+  "VA2GNQ": {
+    "type": "special",
+    "name": "Submarine Onondaga (Museum Ship)",
+    "note": "Oberon-class submarine museum at Musée Maritime de la Pointe-au-Père, Rimouski, QC, Canada. Only submarine museum in Eastern Canada. Also operated as VE2CSL.",
+    "wikipedia": "https://en.wikipedia.org/wiki/HMCS_Onondaga_(S73)",
+    "icon": "⚓"
+  },
+  "W7SUB": {
+    "type": "special",
+    "name": "USS Blueback (Museum Ship)",
+    "note": "Last non-nuclear attack submarine in US Navy service. Museum at Oregon Museum of Science and Industry, Portland, OR. Appeared in The Hunt for Red October.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Blueback_(SS-581)",
+    "icon": "⚓"
+  },
+  "N8SUB": {
+    "type": "special",
+    "name": "USS Silversides (Museum Ship)",
+    "note": "WWII Gato-class submarine museum in Muskegon, MI. Third-highest scoring US submarine of WWII with 23 ships sunk.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Silversides_(SS-236)",
+    "icon": "⚓"
+  },
+  "NK3ST": {
+    "type": "special",
+    "name": "USS Torsk (Museum Ship)",
+    "note": "WWII submarine museum in Baltimore, MD. Also operated as NJ4I. Sank the last Japanese combatant vessels of WWII.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Torsk_(SS-423)",
+    "icon": "⚓"
+  },
+  "N4HLH": {
+    "type": "special",
+    "name": "H.L. Hunley (Museum Ship)",
+    "note": "Civil War Confederate submarine in conservation in Charleston, SC. First submarine to sink an enemy warship (1864). Recently conserved after being raised in 2000.",
+    "wikipedia": "https://en.wikipedia.org/wiki/H._L._Hunley_(submarine)",
+    "icon": "⚓"
+  },
+  "W1WQM": {
+    "type": "special",
+    "name": "USS Thresher Memorial",
+    "note": "Memorial to USS Thresher (SSN-593) lost with all 129 crew in 1963, the worst submarine disaster in US history. Kittery, ME.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Thresher_(SSN-593)",
+    "icon": "⚓"
+  },
+  "N7P": {
+    "type": "special",
+    "name": "USS Parche Memorial",
+    "note": "Memorial to USS Parche (SS-384), most decorated US submarine of WWII. Bremerton, WA.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Parche_(SS-384)",
+    "icon": "⚓"
+  },
+  "W4AVM": {
+    "type": "special",
+    "name": "SS American Victory (Museum Ship)",
+    "note": "WWII Victory Ship museum in Tampa, FL. One of only four operational Victory Ships remaining.",
+    "wikipedia": "https://en.wikipedia.org/wiki/SS_American_Victory",
+    "icon": "⚓"
+  },
+  "K6YVM": {
+    "type": "special",
+    "name": "Red Oak Victory (Museum Ship)",
+    "note": "WWII Victory Ship museum in Richmond, CA. Named for Red Oak, Iowa. One of only four operational Victory Ships remaining.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Red_Oak_Victory",
+    "icon": "⚓"
+  },
+  "IY4PRC": {
+    "type": "special",
+    "name": "Elettra — Marconi's Yacht",
+    "note": "Replica of Guglielmo Marconi's famous research yacht Elettra, housed at Pontecchio Marconi, Italy. Marconi conducted groundbreaking radio experiments aboard the original.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Yacht_Elettra",
+    "icon": "📡"
+  },
+  "W8AGB": {
+    "type": "special",
+    "name": "USCGC Mackinaw WAGB-83 (Museum Ship)",
+    "note": "Historic Coast Guard icebreaker museum in Mackinaw City, MI. Served the Great Lakes 1944-2006. Maritime Museum.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USCGC_Mackinaw_(WAGB-83)",
+    "icon": "⚓"
+  },
+  "8S0HRA": {
+    "type": "special",
+    "name": "SS Sankt Erik (Museum Ship)",
+    "note": "Historic Swedish icebreaker museum in Stockholm, Sweden.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Sankt_Erik",
+    "icon": "⚓"
+  },
+  "PA40AC": {
+    "type": "special",
+    "name": "HNLMS Abraham Crijnssen (Museum Ship)",
+    "note": "WWII Dutch minesweeper museum in Den Helder, Netherlands. Famous for disguising itself as a jungle island to escape Japanese forces in 1942.",
+    "wikipedia": "https://en.wikipedia.org/wiki/HNLMS_Abraham_Crijnssen",
+    "icon": "⚓"
+  },
+  "PI4HAL": {
+    "type": "special",
+    "name": "SS Rotterdam (Museum Ship)",
+    "note": "Former Holland America Line ocean liner museum in Rotterdam, Netherlands.",
+    "wikipedia": "https://en.wikipedia.org/wiki/SS_Rotterdam_(1958)",
+    "icon": "⚓"
+  },
+  "TM2FLO": {
+    "type": "special",
+    "name": "Flore (Museum Submarine)",
+    "note": "French Navy Daphné-class submarine museum in Lorient, France.",
+    "wikipedia": "https://en.wikipedia.org/wiki/French_submarine_Flore_(Q253)",
+    "icon": "⚓"
+  },
+  "II1NS": {
+    "type": "special",
+    "name": "Nazario Sauro (Museum Submarine)",
+    "note": "Italian Navy submarine museum in Genoa, Italy.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Italian_submarine_Nazario_Sauro_(1943)",
+    "icon": "⚓"
+  },
+  "ZL2KS": {
+    "type": "special",
+    "name": "Edwin Fox (Museum Ship)",
+    "note": "Historic British merchant vessel museum in Picton, New Zealand. One of the oldest surviving merchant ships in the world (1853).",
+    "wikipedia": "https://en.wikipedia.org/wiki/Edwin_Fox_(ship)",
+    "icon": "⚓"
+  },
+  "W6N": {
+    "type": "special",
+    "name": "WWII Base End Station",
+    "note": "Restored WWII Army coastal defense radio/fire control station in San Diego, CA. Used to triangulate enemy ship positions.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Fort_Rosecrans",
+    "icon": "🚀"
+  },
+  "N0K": {
+    "type": "special",
+    "name": "USS Pueblo Memorial",
+    "note": "Memorial to USS Pueblo (AGER-2), intelligence ship captured by North Korea in 1968. Still held by North Korea — only US Navy ship currently in enemy hands. Pueblo, CO.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Pueblo_(AGER-2)",
+    "icon": "⚓"
+  },
+  "N5H": {
+    "type": "special",
+    "name": "USS Hoga YT-146 (Museum Ship)",
+    "note": "WWII harbor tug that fought fires at Pearl Harbor on December 7, 1941. Museum in North Little Rock, AR. Only Pearl Harbor attack vessel still afloat.",
+    "wikipedia": "https://en.wikipedia.org/wiki/USS_Hoga_(YT-146)",
+    "icon": "⚓"
+  },
+  "W4NNK": {
+    "type": "special",
+    "name": "Claud W. Somers (Museum Skipjack)",
+    "note": "Chesapeake Bay skipjack oyster dredger museum in Reedville, VA.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Skipjack_(boat)",
+    "icon": "⚓"
+  },
+  "W1E": {
+    "type": "special",
+    "name": "Evelina M. Goulart (Museum Schooner)",
+    "note": "Historic fishing schooner museum in Essex, MA. Built 1927, represents the Essex-built fishing vessel tradition.",
+    "wikipedia": "https://en.wikipedia.org/wiki/Essex,_Massachusetts",
+    "icon": "⚓"
+  },
+  "VA3VGC": {
+    "type": "special",
+    "name": "SS Keewatin (Museum Ship)",
+    "note": "Edwardian-era passenger steamship museum in Kingston, ON, Canada. Last surviving steamship from the original CPR Great Lakes fleet (1907).",
+    "wikipedia": "https://en.wikipedia.org/wiki/SS_Keewatin",
+    "icon": "⚓"
+  },
+  "JS1YMG": {
+	"type": "special",
+	"name": "JAXA SLIM Lunar Lander",
+	"note": "First amateur radio station on the Moon. Japan's Smart Lander for Investigating Moon (SLIM) transmitted on 437.410 MHz from the lunar surface, January 2024.",
+	"wikipedia": "https://en.wikipedia.org/wiki/Smart_Lander_for_Investigating_Moon",
+	"icon": "🛸"
+  },
+"KD5FMU": {
+  "type": "person",
+  "name": "Ham Radio Crusader",
+  "known_as": "Ham Radio Crusader",
+  "fcc_name": "Freddie McGuire",
+  "profession": "Ham Radio YouTuber / AllStarLink Educator",
+  "note": "Freddie Mac McGuire — ham radio YouTuber and AllStarLink community educator. YouTube: Ham Radio Crusader. Based in Henryetta, Oklahoma.",
+  "wikipedia": null,
+  "icon": "📺"
+},
+"N0WRL": {
+  "type": "person",
+  "name": "James Cribbs",
+  "known_as": "James Cribbs",
+  "profession": "Founder, World Radio League & Ham Radio Prep",
+  "note": "Founded Ham Radio Prep (2018) and World Radio League (2023). Electrical/Biomedical Engineering, Vanderbilt. Ham radio logging and contesting platform developer.",
+  "wikipedia": null,
+  "icon": "📺"
+},
+"KK6OTD": {
+  "type": "person",
+  "name": "Tim Allen",
+  "known_as": "Tim Allen",
+  "fcc_name": "Tim Dick",
+  "profession": "Actor / Comedian",
+  "note": "Actor and comedian, known for Home Improvement and Toy Story. Licensed amateur radio operator. Legal name Timothy Dick.",
+  "wikipedia": "https://en.wikipedia.org/wiki/Tim_Allen",
+  "icon": "🎭"
+}
+}

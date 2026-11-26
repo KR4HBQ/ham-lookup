@@ -1,0 +1,13 @@
+services:
+  ham-lookup:
+    build: .
+    image: ham-lookup:latest
+    container_name: ham-lookup
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file: .env
+    volumes:
+      # edit these lists without rebuilding the image
+      - ./ecr_coasters.json:/app/ecr_coasters.json
+      - ./notable_callsigns.json:/app/notable_callsigns.json
