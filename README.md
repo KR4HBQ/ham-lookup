@@ -60,9 +60,12 @@ into an issue. Club Log in particular scans GitHub and revokes any application k
 
 ## Security and privacy
 
-- **Ham Lookup has no login.** Anyone who can open the page can look up calls and log QSOs to your
-  loggers. Run it on your home network only; don't forward port 5000 from your router. If you want it
-  reachable from outside, put it behind a VPN (WireGuard, Tailscale) or a reverse proxy with a login.
+- **Login is optional.** Without one, anyone who can open the page can look up calls and log QSOs to
+  your loggers. On a home network that is usually fine; don't forward port 5000 from your router.
+  Set `HAMLOOKUP_PASSWORD` in `.env` and the browser asks for that password first (any user name
+  works). If you want it reachable from outside, put it behind HTTPS too: a VPN (WireGuard,
+  Tailscale), Cloudflare Access, or a reverse proxy. The password travels with every request, so
+  over plain HTTP anyone on the path could read it.
 - **Error messages hide keys.** Several services take your password or API key in the request URL;
   Ham Lookup strips the query string from every error it shows or logs.
 - **`data/` holds a copy of your log** (callsigns, dates, names). It is ignored by git and Docker builds.
@@ -237,6 +240,7 @@ No LoTW/eQSL data is shown for unworked stations, as neither service has a publi
 ### Other optional settings
 | Variable | Description |
 |---|---|
+| HAMLOOKUP_PASSWORD | Ask for this password before showing Ham Lookup. Blank: no password. |
 | MAPTILER_API_KEY | Interactive maps. Free key at https://cloud.maptiler.com/account/keys/ |
 | ANTHROPIC_API_KEY | Enables the notability check on a callsign's previous holders. |
 

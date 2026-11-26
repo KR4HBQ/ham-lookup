@@ -86,3 +86,35 @@ def test_top_contacts_skip_malformed_callsigns():
 def test_debugger_is_off_unless_asked():
     src = open(hamapp.__file__, encoding="utf-8").read()
     assert "debug=True" not in src
+
+
+def _basic(user, pw):
+    import base64
+    return {"Authorization": "Basic " + base64.b64encode(f"{user}:{pw}".encode()).decode()}
+
+
+def test_no_password_by_default():
+    assert hamapp.app.test_client().get("/").status_code == 200
+
+
+def test_password_protects_every_route(monkeypatch):
+    monkeypatch.setenv("HAMLOOKUP_PASSWORD", "s3cret pässword")
+    monkeypatch.setattr(hamapp.time, "sleep", lambda s: None)
+    client = hamapp.app.test_client()
+    for method, path in [("get", "/"), ("post", "/lookup"), ("post", "/log_qso"), ("get", "/static/icon.svg")]:
+        resp = getattr(client, method)(path)
+        assert resp.status_code == 401, path
+        assert resp.headers["WWW-Authenticate"].startswith('Basic realm="Ham Lookup"')
+    assert client.get("/", headers=_basic("anyone", "wrong")).status_code == 401
+    assert client.get("/", headers=_basic("anyone", "s3cret pässword")).status_code == 200
+    assert client.get("/static/icon.svg", headers=_basic("", "s3cret pässword")).status_code == 200
+
+
+def test_wrong_password_is_slowed_down_and_logged(monkeypatch, caplog):
+    monkeypatch.setenv("HAMLOOKUP_PASSWORD", "right")
+    slept = []
+    monkeypatch.setattr(hamapp.time, "sleep", slept.append)
+    with caplog.at_level(logging.WARNING):
+        hamapp.app.test_client().get("/", headers=_basic("x", "guess-123"))
+    assert slept == [1] and any("Wrong Ham Lookup password" in r.getMessage() for r in caplog.records)
+    assert not any("guess-123" in r.getMessage() for r in caplog.records)   # the guess is never logged

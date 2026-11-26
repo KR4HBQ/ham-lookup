@@ -6,11 +6,12 @@ import time
 import logging
 import xml.etree.ElementTree as ET
 import concurrent.futures
+import hmac
 from collections import Counter
 from urllib.parse import quote as urlquote
 
 import requests
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, Response, render_template, request, jsonify
 
 from logbooks import config as logcfg
 from logbooks import net as lognet
@@ -1263,6 +1264,27 @@ def get_portable_ops(callsign: str) -> dict:
         "sota_activator": None,
         "sota_chaser":    None,
     }
+
+# ─── Optional password ────────────────────────────────────────────────────────
+# With HAMLOOKUP_PASSWORD set, every page and API call asks for it (HTTP Basic auth: the browser
+# shows its own login box and remembers it). Any user name is accepted. Use HTTPS (a reverse proxy
+# or Cloudflare) when the page is reachable from outside: Basic auth sends the password with every
+# request.
+
+@app.before_request
+def _require_password():
+    password = os.environ.get("HAMLOOKUP_PASSWORD", "")
+    if not password:
+        return None
+    auth = request.authorization
+    given = (auth.password or "") if auth and auth.type == "basic" else ""
+    if given and hmac.compare_digest(given.encode("utf-8"), password.encode("utf-8")):
+        return None
+    if given:
+        logger.warning("Wrong Ham Lookup password from %s", request.remote_addr)
+        time.sleep(1)  # slows down guessing
+    return Response("Password required", 401, {"WWW-Authenticate": 'Basic realm="Ham Lookup", charset="UTF-8"'})
+
 
 # ─── Flask Routes ─────────────────────────────────────────────────────────────
 
