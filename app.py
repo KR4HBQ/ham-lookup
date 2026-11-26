@@ -12,6 +12,10 @@ from urllib.parse import quote as urlquote
 import requests
 from flask import Flask, render_template, request, jsonify
 
+from logbooks import config as logcfg
+from logbooks import net as lognet
+from logbooks import sources as logsources
+
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -45,11 +49,6 @@ else:
 _qrz_session_key = None
 _hamqth_session_id = None
 
-# ADIF export cache (5-minute TTL)
-_adif_cache: list | None = None
-_adif_cache_time: float = 0.0
-ADIF_CACHE_TTL = 300
-
 # Location blurb cache (in-memory, capped at 100 entries)
 _location_blurb_cache: dict = {}
 _LOCATION_BLURB_CACHE_MAX = 100
@@ -69,6 +68,7 @@ PROJECT_URL = "https://github.com/KR4HBQ/ham-lookup"
 _contact = os.environ.get("CONTACT_INFO", "").strip()
 USER_AGENT = f"HamLookup/{APP_VERSION} (+{PROJECT_URL}" + (f"; {_contact}" if _contact else "") + ")"
 WIKI_HEADERS = {'User-Agent': USER_AGENT}
+lognet.set_user_agent(USER_AGENT)
 
 
 
@@ -361,139 +361,61 @@ def fetch_clublog(callsign):
         return {"status": "error", "error": str(e)}
 
 
-def fetch_wavelog(callsign):
-    wl_url = os.environ.get("WAVELOG_URL")
-    wl_key = os.environ.get("WAVELOG_KEY")
-    if not wl_url or not wl_key:
-        return {"status": "not_configured"}
-    try:
-        r = requests.post(
-            f"{wl_url.rstrip('/')}/api/private_lookup",
-            json={"key": wl_key, "callsign": callsign,
-                  "station_profile_id": os.environ.get("WAVELOG_STATION_ID", "1")},
-            headers={"Content-Type": "application/json", "Accept": "application/json"},
-            timeout=TIMEOUT,
-        )
-        r.raise_for_status()
-        d = r.json()
-        if not d:
-            return {"status": "not_found"}
+# ─── Your log (worked before) ─────────────────────────────────────────────────
+# The source log (LOG_SOURCE) is cached by logbooks.history; new QSOs go to every logger in LOG_WRITE.
 
-        def _bool(v):
-            if v is None:
-                return False
-            if isinstance(v, bool):
-                return v
-            return str(v).strip().lower() not in ("", "0", "false")
-
-        lotw_raw = d.get("lotw_member", "")
-        return {
-            "status": "ok",
-            "data": {
-                "found":                _bool(d.get("found")),
-                "call_worked":          _bool(d.get("call_worked")),
-                "call_confirmed":       _bool(d.get("call_confirmed")),
-                "call_worked_band":     _bool(d.get("call_worked_band")),
-                "call_worked_band_mode":_bool(d.get("call_worked_band_mode")),
-                "dxcc_confirmed":       _bool(d.get("dxcc_confirmed")),
-                "dxcc_confirmed_on_band":_bool(d.get("dxcc_confirmed_on_band")),
-                "lotw_member":          bool(lotw_raw and str(lotw_raw).strip() not in ("", "0")),
-                "dxcc":                 d.get("dxcc", ""),
-                "bearing":              d.get("bearing", ""),
-                "name":                 d.get("name", ""),
-                "gridsquare":           d.get("gridsquare", ""),
-                "location":             d.get("location", ""),
-            },
-        }
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
+_histories: dict = {}
 
 
-# ─── Wavelog ADIF / Statistics ────────────────────────────────────────────────
-
-def _parse_adif(adif_str: str) -> list:
-    """Parse ADIF string into a list of QSO dicts (uppercase keys)."""
-    records = []
-    for block in adif_str.split("<EOR>"):
-        block = block.strip()
-        if not block:
-            continue
-        qso: dict = {}
-        for m in re.finditer(r"<([A-Za-z_0-9]+):\d+(?::[A-Z])?>([^<]*)", block):
-            qso[m.group(1).upper()] = m.group(2).strip()
-        if qso.get("CALL"):
-            records.append(qso)
-    return records
+def _history():
+    """The History of the configured LOG_SOURCE, or None when no log is configured."""
+    name = logcfg.source()
+    if not name:
+        return None
+    if name not in _histories:
+        _histories[name] = logsources.make_history(name)
+    return _histories[name]
 
 
-def fetch_wavelog_adif() -> list:
-    """Raw ADIF fetch from Wavelog — no caching. Use get_adif_cached() instead."""
-    wl_url = os.environ.get("WAVELOG_URL")
-    wl_key = os.environ.get("WAVELOG_KEY")
-    if not wl_url or not wl_key:
-        return []
-    try:
-        r = requests.post(
-            f"{wl_url.rstrip('/')}/api/get_contacts_adif",
-            json={"key": wl_key, "station_id": "1", "fetchfromid": 0},
-            headers={"Content-Type": "application/json", "Accept": "application/json"},
-            timeout=30,
-        )
-        r.raise_for_status()
-        records = _parse_adif(r.json().get("adif", ""))
-        logger.info(f"ADIF fetched: {len(records)} QSO records")
-        return records
-    except Exception as e:
-        logger.error(f"ADIF fetch failed: {e}")
-        return []
+def _confirmed(q: dict) -> bool:
+    return "Y" in (q.get("lotw_qsl_rcvd", "").upper(), q.get("qsl_rcvd", "").upper())
 
 
-def get_adif_cached() -> list:
-    """Return cached ADIF records, refreshing when stale (TTL: ADIF_CACHE_TTL seconds)."""
-    global _adif_cache, _adif_cache_time
-    now = time.time()
-    if _adif_cache is not None and (now - _adif_cache_time) < ADIF_CACHE_TTL:
-        return _adif_cache
-    records = fetch_wavelog_adif()
-    if records:
-        _adif_cache = records
-        _adif_cache_time = now
-    return _adif_cache or []
-
-
-def fetch_wavelog_callsign_qsos(callsign: str, adif_records: list) -> list:
+def log_callsign_qsos(callsign: str, records: list) -> list:
     """Return all QSOs with a specific callsign, newest first."""
     cs = callsign.upper()
-    matched = [q for q in adif_records if q.get("CALL", "").upper() == cs]
-    matched.sort(key=lambda q: (q.get("QSO_DATE", ""), q.get("TIME_ON", "")), reverse=True)
+    matched = [q for q in records if q.get("call", "").upper() == cs]
+    matched.sort(key=lambda q: (q.get("qso_date", ""), q.get("time_on", "")), reverse=True)
     return [{
-        "date":           q.get("QSO_DATE", ""),
-        "time":           q.get("TIME_ON", ""),
-        "band":           q.get("BAND", ""),
-        "mode":           q.get("MODE", ""),
-        "rst_sent":       q.get("RST_SENT", ""),
-        "rst_rcvd":       q.get("RST_RCVD", ""),
-        "lotw_qsl_sent":  q.get("LOTW_QSL_SENT", ""),
-        "lotw_qsl_rcvd":  q.get("LOTW_QSL_RCVD", ""),
-        "eqsl_qsl_sent":  q.get("EQSL_QSL_SENT", ""),
-        "eqsl_qsl_rcvd":  q.get("EQSL_QSL_RCVD", ""),
+        "date":           q.get("qso_date", ""),
+        "time":           q.get("time_on", ""),
+        "band":           q.get("band", ""),
+        "mode":           q.get("submode") or q.get("mode", ""),
+        "rst_sent":       q.get("rst_sent", ""),
+        "rst_rcvd":       q.get("rst_rcvd", ""),
+        "lotw_qsl_sent":  q.get("lotw_qsl_sent", ""),
+        "lotw_qsl_rcvd":  q.get("lotw_qsl_rcvd", ""),
+        "eqsl_qsl_sent":  q.get("eqsl_qsl_sent", ""),
+        "eqsl_qsl_rcvd":  q.get("eqsl_qsl_rcvd", ""),
+        "confirmed":      _confirmed(q),
+        "name":           q.get("name", ""),
     } for q in matched]
 
 
-def fetch_wavelog_top_contacts(adif_records: list, limit: int = 10) -> list:
-    """Return the top N most-worked callsigns from ADIF records."""
+def log_top_contacts(records: list, limit: int = 10) -> list:
+    """Return the top N most-worked callsigns."""
     counts: Counter = Counter()
     last_dates: dict = {}
     names: dict = {}
-    for q in adif_records:
-        cs = q.get("CALL", "").upper()
+    for q in records:
+        cs = q.get("call", "").upper()
         if cs:
             counts[cs] += 1
-            d = q.get("QSO_DATE", "")
+            d = q.get("qso_date", "")
             if d > last_dates.get(cs, ""):
                 last_dates[cs] = d
             if cs not in names:
-                n = q.get("NAME", "").strip()
+                n = q.get("name", "").strip()
                 if n:
                     names[cs] = n
     return [
@@ -502,21 +424,31 @@ def fetch_wavelog_top_contacts(adif_records: list, limit: int = 10) -> list:
     ]
 
 
-def fetch_wavelog_statistics() -> dict:
-    """Fetch overall log statistics from Wavelog."""
-    wl_url = os.environ.get("WAVELOG_URL")
-    wl_key = os.environ.get("WAVELOG_KEY")
-    if not wl_url or not wl_key:
-        return {"status": "not_configured"}
-    try:
-        r = requests.get(
-            f"{wl_url.rstrip('/')}/api/statistics/{wl_key}",
-            timeout=TIMEOUT,
-        )
-        r.raise_for_status()
-        return {"status": "ok", "data": r.json()}
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
+def log_check(callsign: str) -> dict:
+    """Summary of the cached source log for one callsign, with its QSOs and the top contacts."""
+    name = logcfg.source()
+    info = {"source": name, "label": logcfg.label(name), "status": "not_configured",
+            "error": "", "worked": False, "total_qsos": 0, "updated": 0,
+            "has_confirmations": logsources.has_confirmations(name), "name": "",
+            "qsos": [], "top_contacts": []}
+    if not name:
+        info["error"] = "set LOG_SOURCE (and that logger's settings) to check your log"
+        return info
+    missing = logcfg.read_missing(name)
+    if missing:
+        info["error"] = "set " + ", ".join(missing)
+        return info
+    hist = _history()
+    snap = hist.get()
+    qsos = log_callsign_qsos(callsign, snap.records)
+    info.update(
+        status="ok" if snap.records or (snap.updated and not snap.error) else
+               ("loading" if snap.loading else "error"),
+        error=snap.error, worked=bool(qsos), total_qsos=len(snap.records), updated=snap.updated,
+        name=next((q["name"] for q in qsos if q["name"]), ""),
+        qsos=qsos, top_contacts=log_top_contacts(snap.records),
+    )
+    return info
 
 
 def fetch_hamdb(callsign):
@@ -1303,11 +1235,23 @@ def get_portable_ops(callsign: str) -> dict:
 
 # ─── Flask Routes ─────────────────────────────────────────────────────────────
 
+def _log_url() -> str:
+    """Where "View full log" points: the Wavelog or Cloudlog web UI, when there is one."""
+    if logcfg.source() == "wavelog":
+        return logcfg.env("WAVELOG_URL")
+    for name in logcfg.writers():
+        if name in ("wavelog", "cloudlog"):
+            return logcfg.env(f"{name.upper()}_URL")
+    return ""
+
+
 @app.route("/")
 def index():
     return render_template(
         "index.html",
-        wavelog_url=os.environ.get("WAVELOG_URL", ""),
+        log_url=_log_url(),
+        log_source_label=logcfg.label(logcfg.source()) if logcfg.source() else "",
+        log_writers=[{"id": n, "label": logcfg.label(n)} for n in logcfg.writers()],
         app_version=APP_VERSION,
         maptiler_key=os.environ.get("MAPTILER_API_KEY", ""),
     )
@@ -1331,8 +1275,7 @@ def lookup():
         "qrz":           lambda: fetch_qrz(callsign),
         "hamqth":        lambda: fetch_hamqth(callsign),
         "clublog":       lambda: fetch_clublog(callsign),
-        "wavelog":       lambda: fetch_wavelog(callsign),
-        "wavelog_stats": lambda: fetch_wavelog_statistics(),
+        "log":           lambda: log_check(callsign),
         "pskreporter":   lambda: fetch_pskreporter(callsign),
         "allstarlink":   lambda: fetch_allstarlink(callsign),
         "hamdb":         lambda: fetch_hamdb(callsign),
@@ -1499,10 +1442,10 @@ def lookup():
         "web":      hq_data.get("web"),
     }.items() if v}
 
-    # ADIF-based data — uses 5-min module-level cache
-    adif_records  = get_adif_cached()
-    wavelog_qsos  = fetch_wavelog_callsign_qsos(callsign, adif_records)
-    top_contacts  = fetch_wavelog_top_contacts(adif_records)
+    # Your own log (cached by logbooks.history); the lists travel outside results
+    log_info      = results.get("log") or {}
+    log_qsos      = log_info.pop("qsos", [])
+    top_contacts  = log_info.pop("top_contacts", [])
     ecr_coasters  = get_ecr_coasters()
 
     return jsonify({
@@ -1511,7 +1454,7 @@ def lookup():
         "social":            social,
         "version":           APP_VERSION,
         "ecr_coaster":       callsign.upper() in ecr_coasters,
-        "wavelog_qsos":      wavelog_qsos,
+        "log_qsos":          log_qsos,
         "top_contacts":      top_contacts,
         "callsign_history":          callsign_history,
         "notable_entry":             notable_entry or None,
@@ -1536,113 +1479,71 @@ def lookup():
 
 @app.route("/log_qso", methods=["POST"])
 def log_qso():
-    wl_url = os.environ.get("WAVELOG_URL")
-    wl_key = os.environ.get("WAVELOG_KEY")
-    if not wl_url or not wl_key:
-        return jsonify({"status": "error", "error": "Wavelog not configured"}), 503
+    writers = logcfg.writers()
+    if not writers:
+        return jsonify({"status": "error", "results": [],
+                        "error": "No logger configured for new QSOs (set LOG_WRITE)"}), 503
 
     body     = request.get_json(silent=True) or {}
-    callsign = body.get("callsign", "").strip().upper()
-    band     = body.get("band",     "").strip()
-    mode     = body.get("mode",     "").strip().upper()
-    dt_on    = body.get("datetime_on", "").strip()  # "YYYYMMDD HHMMSS"
+    record, error = build_qso_record(body)
+    if error:
+        return jsonify({"status": "error", "results": [], "error": error}), 400
+
+    results = logsources.write(writers, record)
+    ok = [r for r in results if r["ok"]]
+    for r in results:
+        logger.info("log_qso %s -> %s: %s %s", record["call"], r["logger"],
+                    "ok" if r["ok"] else "FAILED", r["message"])
+    if ok:
+        hist = _history()
+        if hist is not None:
+            hist.add(record)
+    status = "ok" if len(ok) == len(results) else ("partial" if ok else "error")
+    failed = "; ".join(f"{r['label']}: {r['message']}" for r in results if not r["ok"])
+    return jsonify({"status": status, "results": results, "error": failed}), (200 if ok else 502)
+
+
+_PHONE_MODES = {"SSB", "USB", "LSB", "FM", "AM", "DV", "PHONE"}
+
+
+def build_qso_record(body: dict) -> tuple[dict, str]:
+    """The QSO from the Log QSO form as an ADIF-style record (lower-case field names)."""
+    def val(key: str) -> str:
+        return str(body.get(key) or "").strip()
+
+    callsign = val("callsign").upper()
+    band     = val("band")
+    mode     = val("mode").upper()
+    dt_on    = val("datetime_on")  # "YYYYMMDD HHMMSS"
 
     if not callsign or not band or not mode or not dt_on:
-        return jsonify({"status": "error",
-                        "error": "callsign, band, mode, and datetime_on are required"}), 400
-
+        return {}, "callsign, band, mode, and datetime_on are required"
     parts = dt_on.split()
-    if len(parts) != 2 or len(parts[0]) != 8 or len(parts[1]) != 6:
-        return jsonify({"status": "error",
-                        "error": "datetime_on must be 'YYYYMMDD HHMMSS'"}), 400
-    qso_date, time_on = parts[0], parts[1]
+    if len(parts) != 2 or len(parts[0]) != 8 or len(parts[1]) != 6 or not "".join(parts).isdigit():
+        return {}, "datetime_on must be 'YYYYMMDD HHMMSS'"
+    qso_date, time_on = parts
 
     # 59 for phone modes, 599 for CW and digital
-    _PHONE_MODES = {"SSB", "USB", "LSB", "FM", "AM", "DV", "PHONE"}
     default_rst = "59" if mode in _PHONE_MODES else "599"
-    rst_sent = body.get("rst_sent", "").strip() or default_rst
-    rst_rcvd = body.get("rst_rcvd", "").strip() or default_rst
-
-    freq      = body.get("freq",      "").strip()
-    submode   = body.get("submode",   "").strip().upper()
-    tx_pwr    = body.get("tx_pwr",    "").strip()
-    comment   = body.get("comment",   "").strip()
-    notes     = body.get("notes",     "").strip()
-    name      = body.get("name",      "").strip()
-    gridsquare= body.get("gridsquare","").strip().upper()
-    country   = body.get("country",   "").strip()
-    state     = body.get("state",     "").strip()
-    cnty      = body.get("cnty",      "").strip()
-    qth       = body.get("qth",       "").strip()
-    cont      = body.get("cont",      "").strip().upper()
-    dxcc      = body.get("dxcc",      "").strip()
-    cqz       = body.get("cqz",       "").strip()
-    ituz      = body.get("ituz",      "").strip()
-    iota      = body.get("iota",      "").strip().upper()
-    lat       = body.get("lat",       "").strip()
-    lon       = body.get("lon",       "").strip()
-    distance  = body.get("distance",  "").strip()
-
-    def _af(name, value):
-        v = str(value)
-        return f"<{name}:{len(v)}>{v}"
-
-    adif_string = (
-        _af("CALL",     callsign) +
-        _af("BAND",     band)     +
-        _af("MODE",     mode)     +
-        _af("QSO_DATE", qso_date) +
-        _af("TIME_ON",  time_on)  +
-        _af("TIME_OFF", time_on)  +
-        _af("RST_SENT", rst_sent) +
-        _af("RST_RCVD", rst_rcvd) +
-        "".join(
-            _af(n, v) for n, v in [
-                ("FREQ",       freq),
-                ("SUBMODE",    submode),
-                ("TX_PWR",     tx_pwr),
-                ("COMMENT",    comment),
-                ("NOTES",      notes),
-                ("NAME",       name),
-                ("GRIDSQUARE", gridsquare),
-                ("COUNTRY",    country),
-                ("STATE",      state),
-                ("CNTY",       cnty),
-                ("QTH",        qth),
-                ("CONT",       cont),
-                ("DXCC",       dxcc),
-                ("CQZ",        cqz),
-                ("ITUZ",       ituz),
-                ("IOTA",       iota),
-                ("LAT",        lat),
-                ("LON",        lon),
-                ("DISTANCE",   distance),
-            ] if v
-        ) +
-        "<eor>"
-    )
-
-    try:
-        r = requests.post(
-            f"{wl_url.rstrip('/')}/api/qso",
-            json={
-                "key":                wl_key,
-                "station_profile_id": os.environ.get("WAVELOG_STATION_ID", "1"),
-                "type":               "adif",
-                "string":             adif_string,
-            },
-            headers={"Content-Type": "application/json", "Accept": "application/json"},
-            timeout=TIMEOUT,
-        )
-        r.raise_for_status()
-        global _adif_cache, _adif_cache_time
-        _adif_cache      = None
-        _adif_cache_time = 0.0
-        logger.info(f"QSO logged: {callsign} {band} {mode} {qso_date} {time_on}")
-        return jsonify({"status": "ok"})
-    except Exception as e:
-        logger.error(f"log_qso failed: {e}")
-        return jsonify({"status": "error", "error": str(e)}), 502
+    record = {
+        "call":     callsign,
+        "band":     band,
+        "mode":     mode,
+        "qso_date": qso_date,
+        "time_on":  time_on,
+        "time_off": time_on,
+        "rst_sent": val("rst_sent") or default_rst,
+        "rst_rcvd": val("rst_rcvd") or default_rst,
+    }
+    for key, upper in [("freq", False), ("submode", True), ("tx_pwr", False), ("comment", False),
+                       ("notes", False), ("name", False), ("gridsquare", True), ("country", False),
+                       ("state", False), ("cnty", False), ("qth", False), ("cont", True),
+                       ("dxcc", False), ("cqz", False), ("ituz", False), ("iota", True),
+                       ("lat", False), ("lon", False), ("distance", False)]:
+        v = val(key)
+        if v:
+            record[key] = v.upper() if upper else v
+    return record, ""
 
 
 if __name__ == "__main__":

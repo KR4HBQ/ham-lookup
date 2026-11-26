@@ -747,7 +747,7 @@
   <!-- ── RIGHT COLUMN ── -->
   <div class="col">
     <div class="card" id="wavelog-card" style="display:none;">
-      <div class="card-title">Wavelog — Log Check</div>
+      <div class="card-title" id="wavelog-title">Log Check</div>
       <div class="card-body" id="wavelog-body">
         <span class="na">Loading…</span>
       </div>
@@ -761,7 +761,7 @@
       </div>
     </div>
 
-    <!-- Top Contacts (from Wavelog log) -->
+    <!-- Top Contacts (from your log) -->
     <div class="card" id="top-contacts-card" style="display:none;">
       <div class="card-title">Your Top Contacts</div>
       <div class="card-body" id="top-contacts-body">
@@ -809,7 +809,11 @@
   </div>
 </div>
 
-<script>window.WAVELOG_URL = {{ wavelog_url | tojson }};</script>
+<script>
+  window.LOG_URL     = {{ log_url | tojson }};
+  window.LOG_LABEL   = {{ log_source_label | tojson }};
+  window.LOG_WRITERS = {{ log_writers | tojson }};
+</script>
 <script>const MAPTILER_KEY = {{ maptiler_key | tojson }};</script>
 <script>
 maptilersdk.config.apiKey = MAPTILER_KEY;
@@ -1613,65 +1617,57 @@ function renderPSK(results) {
     </div>`;
 }
 
-// ── Render: Wavelog ──────────────────────────────────────────────────────────
-function renderWavelog(results, qsos = [], notableInfo = null) {
-  const wl          = results.wavelog;
-  const stats       = results.wavelog_stats;
+// ── Render: Log Check (your own log, any LOG_SOURCE) ───────────────────────
+function renderWavelog(log, qsos = [], notableInfo = null) {
+  log = log || {};
+  const label       = log.label || window.LOG_LABEL || '';
   const body        = $('wavelog-body');
   $("wavelog-card").style.display = "block";
+  $("wavelog-title").textContent = label ? `Log Check — ${label}` : 'Log Check';
   const isSpecial   = notableInfo?.entry_type === 'special';
   const isPrevNot   = !!(notableInfo?.notable && notableInfo?.is_current_holder === false);
-
-  // Not configured — early return; previous-notable note not relevant here
-  if (wl?.status === 'not_configured') {
-    body.innerHTML = '<span class="na">Wavelog not configured (set WAVELOG_URL + WAVELOG_KEY)</span>';
-    return;
-  }
+  const notInLog    = `<div style="font-size:0.95rem;font-weight:500;color:#6b7280;margin-bottom:8px;">${antennaIcon('#6b7280')}Not in Log</div>`;
+  const historic    = '<span class="na">Historic or institutional station &#8212; log check not applicable</span>';
 
   let html = '';
 
-  if (!wl || wl.status !== 'ok') {
-    html = isSpecial
-      ? '<span class="na">Historic or institutional station &#8212; Wavelog log check not applicable</span>'
-      : `<div style="font-size:0.95rem;font-weight:500;color:#6b7280;margin-bottom:8px;">${antennaIcon('#6b7280')}Not in Log</div>`;
+  if (log.status === 'not_configured') {
+    html = `<span class="na">Log check not configured (${esc(log.error || 'set LOG_SOURCE')})</span>`;
+  } else if (log.status === 'loading') {
+    html = `<span class="na">Loading your ${esc(label)} log&#8230; try again in a moment</span>`;
+  } else if (log.status !== 'ok') {
+    html = `<span class="na">Could not read your ${esc(label)} log${log.error ? ': ' + esc(log.error) : ''}</span>`;
+  } else if (log.worked && qsos.length) {
+    const conf = !!log.has_confirmations;
+    html += `<div style="font-size:1rem;font-weight:600;color:var(--accent);margin-bottom:8px;">${antennaIcon('#00d4aa')}${qsos.length} QSO${qsos.length !== 1 ? 's' : ''} on record</div>`;
+    const rows = qsos.slice(0, 5).map(q => {
+      const dateStr = q.date.length === 8
+        ? `${q.date.slice(0,4)}-${q.date.slice(4,6)}-${q.date.slice(6,8)}`
+        : q.date;
+      return `<tr>
+        <td>${esc(dateStr)}</td>
+        <td>${esc(q.band)}</td>
+        <td>${esc(q.mode)}</td>${conf ? `<td title="Confirmed (LoTW or QSL card)">${q.confirmed ? '&#10003;' : ''}</td>` : ''}
+      </tr>`;
+    }).join('');
+    html += `<div class="qso-scroll" style="max-height:180px;">
+      <table class="data-table">
+        <thead><tr><th>Date</th><th>Band</th><th>Mode</th>${conf ? '<th>Cfm</th>' : ''}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+    if (window.LOG_URL) {
+      html += `<div style="margin-top:10px;">
+        <a class="echolink-link" href="${esc(window.LOG_URL)}"
+           target="_blank" rel="noopener">View full log &#8594;</a>
+      </div>`;
+    }
+  } else if (isSpecial) {
+    html += historic;
   } else {
-    const d = wl.data;
-    if (d.call_worked) {
-      if (qsos.length) {
-        html += `<div style="font-size:1rem;font-weight:600;color:var(--accent);margin-bottom:8px;">${antennaIcon('#00d4aa')}${qsos.length} QSO${qsos.length !== 1 ? 's' : ''} on record</div>`;
-        const rows = qsos.slice(0, 5).map(q => {
-          const dateStr = q.date.length === 8
-            ? `${q.date.slice(0,4)}-${q.date.slice(4,6)}-${q.date.slice(6,8)}`
-            : q.date;
-          return `<tr>
-            <td>${esc(dateStr)}</td>
-            <td>${esc(q.band)}</td>
-            <td>${esc(q.mode)}</td>
-          </tr>`;
-        }).join('');
-        html += `<div class="qso-scroll" style="max-height:180px;">
-          <table class="data-table">
-            <thead><tr><th>Date</th><th>Band</th><th>Mode</th></tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>`;
-      }
-      if (window.WAVELOG_URL) {
-        html += `<div style="margin-top:10px;">
-          <a class="echolink-link" href="${esc(window.WAVELOG_URL)}"
-             target="_blank" rel="noopener">View full log &#8594;</a>
-        </div>`;
-      }
-    } else {
-      if (isSpecial) {
-        html += '<span class="na">Historic or institutional station &#8212; Wavelog log check not applicable</span>';
-      } else {
-        html += `<div style="font-size:0.95rem;font-weight:500;color:#6b7280;margin-bottom:8px;">${antennaIcon('#6b7280')}Not in Log</div>`;
-        const totalQsos = stats?.data?.total_qsos || stats?.data?.Total;
-        if (totalQsos) {
-          html += `<p style="color:var(--muted);font-size:12px;margin-top:8px;">Total log: ${esc(String(totalQsos))} QSOs</p>`;
-        }
-      }
+    html += notInLog;
+    if (log.total_qsos) {
+      html += `<p style="color:var(--muted);font-size:12px;margin-top:8px;">Total log: ${esc(String(log.total_qsos))} QSOs</p>`;
     }
   }
 
@@ -1687,7 +1683,8 @@ function renderWavelog(results, qsos = [], notableInfo = null) {
     </div>`;
   }
 
-  if (window.WAVELOG_URL) {
+  if ((window.LOG_WRITERS || []).length) {
+    const dest = window.LOG_WRITERS.map(w => w.label).join(', ');
     html += `<div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px;">
       <button id="log-qso-toggle-btn" onclick="toggleLogQSOForm()"
         style="background:var(--accent);color:#0a1a15;border:none;font-family:inherit;
@@ -1696,6 +1693,7 @@ function renderWavelog(results, qsos = [], notableInfo = null) {
         onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
         Log QSO
       </button>
+      <span style="color:var(--muted);font-size:11px;margin-left:6px;">to ${esc(dest)}</span>
       <span id="log-qso-status" style="display:none;font-size:12px;margin-left:10px;"></span>
       <div id="log-qso-form" style="display:none;margin-top:10px;">
         <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;margin-bottom:6px;">
@@ -1865,7 +1863,7 @@ async function submitLogQSO() {
     tx_pwr:      ($('log-qso-txpwr')?.value     || '').trim(),
     comment:     ($('log-qso-comment')?.value   || '').trim(),
     notes:       ($('log-qso-notes')?.value     || '').trim(),
-    name:        (_r.wavelog?.data?.name || _ld.current_holder_name || '').trim(),
+    name:        (_ld.results?.log?.name || _ld.current_holder_name || '').trim(),
     gridsquare:  (_d.grid                || '').trim(),
     country:     (_qrz.country   || _hq.country   || '').trim(),
     state:       (_qrz.state     || _hq.us_state  || '').trim(),
@@ -1893,12 +1891,19 @@ async function submitLogQSO() {
       body:    JSON.stringify(payload),
     });
     const data = await res.json();
+    const per  = (data.results || []).map(r =>
+      `${r.label} ${r.ok ? '✓' : '✗'}${r.message ? ' ' + r.message : ''}`).join(' · ');
     if (data.status === 'ok') {
-      _logQsoStatus('QSO logged ✓', 'ok');
+      _logQsoStatus(per ? `Logged: ${per}` : 'QSO logged ✓', 'ok');
+      const form = $('log-qso-form');
+      if (form) form.style.display = 'none';
+    } else if (data.status === 'partial') {
+      // some loggers have it: don't offer Submit again, or those would get a duplicate
+      _logQsoStatus(per, 'error');
       const form = $('log-qso-form');
       if (form) form.style.display = 'none';
     } else {
-      _logQsoStatus(data.error || 'Error logging QSO', 'error');
+      _logQsoStatus(per || data.error || 'Error logging QSO', 'error');
       if (btn) btn.disabled = false;
     }
   } catch(e) {
@@ -2125,7 +2130,7 @@ function renderTopContacts(topContacts) {
   if (!card || !body) return;
 
   if (!topContacts || !topContacts.length) {
-    body.innerHTML = '<span class="na">No log data (Wavelog not configured or empty log)</span>';
+    body.innerHTML = '<span class="na">No log data (log check not configured, still loading, or empty log)</span>';
     card.style.display = 'block';
     return;
   }
@@ -2142,7 +2147,7 @@ function renderTopContacts(topContacts) {
 
   body.innerHTML = `${rows}
     <p style="color:var(--muted);font-size:11px;font-style:italic;margin-top:8px;line-height:1.5;">
-      Based on your Wavelog log</p>`;
+      Based on your ${esc(window.LOG_LABEL || '')} log</p>`;
   card.style.display = 'block';
 }
 
@@ -2150,7 +2155,7 @@ function renderTopContacts(topContacts) {
 function renderStatusBar(results) {
   const SOURCES = {
     callook:'Callook (FCC Data)', qrz:'QRZ', hamqth:'HamQTH',
-    clublog:'Clublog', wavelog:'Wavelog',
+    clublog:'Clublog', log: window.LOG_LABEL || 'Your log',
     pskreporter:'PSK Reporter', allstarlink:'AllStarLink',
     hamdb:'HamDB',
     weather:'Weather', timezone:'Timezone',
@@ -2259,7 +2264,7 @@ if (document.readyState === 'loading') {
 // ── Main render ──────────────────────────────────────────────────────────────
 function render(payload) {
   const { callsign, results, derived, social = {},
-          wavelog_qsos = [], top_contacts = [],
+          log_qsos = [], top_contacts = [],
           callsign_history = null } = payload;
   const ecrCoaster        = !!payload.ecr_coaster;
   const currentHolderName = payload.current_holder_name || '';
@@ -2291,7 +2296,7 @@ function render(payload) {
   renderPortableOps(payload);
   renderDigitalVoice(results, callsign);
   renderPSK(results);
-  renderWavelog(results, wavelog_qsos, notableInfo);
+  renderWavelog(results.log, log_qsos, notableInfo);
   renderCallsignHistory(callsign, callsign_history);
   renderTopContacts(top_contacts);
   renderStatusBar(results);
@@ -2364,7 +2369,7 @@ async function doLookup() {
 
   // Staggered source-name reveal
   const SOURCE_LIST = ['Callook', 'QRZ.com', 'HamQTH', 'Clublog',
-                       'Wavelog', 'PSK Reporter', 'AllStarLink', 'HamDB', 'Open-Meteo'];
+                       (window.LOG_LABEL || 'Your log'), 'PSK Reporter', 'AllStarLink', 'HamDB', 'Open-Meteo'];
   let srcIdx = 0;
   $('loading-sources').innerHTML = '';
   if (sourceIntvl) clearInterval(sourceIntvl);
