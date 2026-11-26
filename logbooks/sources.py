@@ -4,15 +4,18 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from . import config, wavelog
+from . import clublog, config, lotw, net, qrz, wavelog, wrl
 from .adif import parse_adif
 from .base import WriteResult
 from .history import FetchResult, History
 
 # minutes between refreshes, and between full refreshes for sources that fetch only new QSOs
-REFRESH_MIN = {"wavelog": 5, "adif": 5}
-FULL_REFRESH_MIN = {}
-INCREMENTAL = set()
+# QRZ fetches only new QSOs every 5 minutes and the whole log every 6 hours (new confirmations).
+# LoTW builds the whole report for every request (minutes for a big log), so it is read rarely.
+REFRESH_MIN = {"wavelog": 5, "adif": 5, "qrz": 5, "clublog": 60, "wrl": 60, "lotw": 360}
+FULL_REFRESH_MIN = {"qrz": 360}
+INCREMENTAL = {"qrz"}
+APP_DIR = Path(__file__).resolve().parents[1]
 
 
 def _adif_records(chunks) -> list[dict]:
@@ -24,12 +27,60 @@ def _fetch_wavelog(cursor) -> FetchResult:
     return FetchResult(_adif_records(chunks))
 
 
+def _fetch_qrz(cursor) -> FetchResult:
+    after = int(cursor or 0)
+    recs = [qrz.normalize(r) for r in _adif_records(qrz.fetch(config.env("QRZ_LOGBOOK_KEY"), after=after))]
+    ids = [int(r["app_qrzlog_logid"]) for r in recs if r.get("app_qrzlog_logid", "").isdigit()]
+    return FetchResult(recs, cursor=max(ids + [after - 1]) + 1, incremental=after > 0)
+
+
+def _fetch_clublog(cursor) -> FetchResult:
+    text = clublog.fetch(config.env("CLUBLOG_CALLSIGN"), config.env("CLUBLOG_TOKEN"))
+    return FetchResult(list(parse_adif(text)))
+
+
+def _fetch_lotw(cursor) -> FetchResult:
+    text = lotw.fetch(config.env("LOTW_USERNAME"), config.env("LOTW_PASSWORD"),
+                      owncall=config.env("LOTW_OWNCALL") or None)
+    return FetchResult([lotw.normalize(r) for r in parse_adif(text)])
+
+
+def _fetch_wrl(cursor) -> FetchResult:
+    return FetchResult(list(wrl.fetch(config.env("WRL_API_KEY"))))
+
+
+def adif_location(raw: str) -> str:
+    """ADIF_PATH: an http(s) URL, or a file path (relative paths are relative to the app folder)."""
+    if raw.lower().startswith(("http://", "https://")):
+        return raw
+    p = Path(raw).expanduser()
+    return str(p if p.is_absolute() else APP_DIR / p)
+
+
+def _fetch_adif(cursor) -> FetchResult:
+    where = adif_location(config.env("ADIF_PATH"))
+    if where.lower().startswith(("http://", "https://")):
+        text = net.fetch_text(where)
+    else:
+        try:
+            text = Path(where).read_text(encoding="utf-8", errors="replace")
+        except OSError as exc:
+            raise net.FetchError(f"cannot read ADIF_PATH {where}: {exc.strerror or exc}") from None
+    return FetchResult(list(parse_adif(text)))
+
+
 FETCHERS = {
     "wavelog": _fetch_wavelog,
+    "qrz": _fetch_qrz,
+    "clublog": _fetch_clublog,
+    "lotw": _fetch_lotw,
+    "wrl": _fetch_wrl,
+    "adif": _fetch_adif,
 }
 
 
 def has_confirmations(name: str | None) -> bool:
+    """WRL contacts carry no QSL status, so its log check shows no confirmations."""
     return name in ("wavelog", "qrz", "clublog", "lotw", "adif")
 
 
