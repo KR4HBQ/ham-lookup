@@ -6,11 +6,12 @@ import time
 import logging
 import xml.etree.ElementTree as ET
 import concurrent.futures
+import hmac
 from collections import Counter
 from urllib.parse import quote as urlquote
 
 import requests
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, Response, render_template, request, jsonify
 
 from logbooks import config as logcfg
 from logbooks import net as lognet
@@ -69,6 +70,18 @@ _contact = os.environ.get("CONTACT_INFO", "").strip()
 USER_AGENT = f"HamLookup/{APP_VERSION} (+{PROJECT_URL}" + (f"; {_contact}" if _contact else "") + ")"
 WIKI_HEADERS = {'User-Agent': USER_AGENT}
 lognet.set_user_agent(USER_AGENT)
+
+_QUERY_RE = re.compile(r"\?[^\s'\")]+")
+
+
+def _safe_err(e) -> str:
+    """An exception as text with URL query strings removed.
+
+    requests puts the request URL in its messages, and several services here take the API key,
+    password or session id as a query parameter (Club Log, QRZ, HamQTH). This text is shown in the
+    browser and in the logs, so the query string never goes with it.
+    """
+    return _QUERY_RE.sub("?[redacted]", str(e)) or type(e).__name__
 
 
 
@@ -151,7 +164,7 @@ def fetch_callook(callsign):
             return {"status": "ok", "data": data}
         return {"status": "not_found"}
     except Exception as e:
-        return {"status": "error", "error": str(e)}
+        return {"status": "error", "error": _safe_err(e)}
 
 
 def _qrz_login():
@@ -241,11 +254,11 @@ def fetch_qrz(callsign):
                     )
                     data["bio_images"] = list(dict.fromkeys(bio_images))  # dedup, preserve order
             except Exception as bio_err:
-                logger.debug(f"QRZ bio fetch failed for {callsign}: {bio_err}")
+                logger.debug(f"QRZ bio fetch failed for {callsign}: {_safe_err(bio_err)}")
 
         return {"status": "ok", "data": data}
     except Exception as e:
-        return {"status": "error", "error": str(e)}
+        return {"status": "error", "error": _safe_err(e)}
 
 
 # HamQTH uses a fixed XML namespace for all responses
@@ -273,19 +286,18 @@ def _hamqth_login():
             params={"u": user, "p": pw},
             timeout=TIMEOUT,
         )
-        logger.info(f"HamQTH login response (first 300): {r.text[:300]}")
         root = ET.fromstring(r.text)
         session_el = root.find('.//h:session', _HAMQTH_NS)
         key = _hq_text(session_el, 'session_id')
         if key:
             _hamqth_session_id = key
-            logger.info(f"HamQTH session key obtained: {_hamqth_session_id[:8]}…")
+            logger.info("HamQTH session key obtained")
             return _hamqth_session_id
         err = _hq_text(session_el, 'error')
-        logger.error(f"HamQTH login failed — key not found. Error: {err!r}. Response: {r.text[:300]}")
+        logger.error(f"HamQTH login failed — key not found. Error: {err!r}")
         return None
     except Exception as e:
-        logger.error(f"HamQTH login exception: {e}")
+        logger.error(f"HamQTH login exception: {_safe_err(e)}")
         return None
 
 
@@ -336,7 +348,7 @@ def fetch_hamqth(callsign):
             return {"status": "not_found"}
         return {"status": "ok", "data": data}
     except Exception as e:
-        return {"status": "error", "error": str(e)}
+        return {"status": "error", "error": _safe_err(e)}
 
 
 
@@ -358,7 +370,7 @@ def fetch_clublog(callsign):
             return {"status": "not_found"}
         return {"status": "ok", "data": data}
     except Exception as e:
-        return {"status": "error", "error": str(e)}
+        return {"status": "error", "error": _safe_err(e)}
 
 
 # ─── Your log (worked before) ─────────────────────────────────────────────────
@@ -402,6 +414,9 @@ def log_callsign_qsos(callsign: str, records: list) -> list:
     } for q in matched]
 
 
+_CALL_RE = re.compile(r"^[A-Z0-9/]{2,15}$")
+
+
 def log_top_contacts(records: list, limit: int = 10) -> list:
     """Return the top N most-worked callsigns."""
     counts: Counter = Counter()
@@ -409,7 +424,7 @@ def log_top_contacts(records: list, limit: int = 10) -> list:
     names: dict = {}
     for q in records:
         cs = q.get("call", "").upper()
-        if cs:
+        if cs and _CALL_RE.match(cs):
             counts[cs] += 1
             d = q.get("qso_date", "")
             if d > last_dates.get(cs, ""):
@@ -464,7 +479,7 @@ def fetch_hamdb(callsign):
             return {"status": "not_found"}
         return {"status": "ok", "data": inner}
     except Exception as e:
-        return {"status": "error", "error": str(e)}
+        return {"status": "error", "error": _safe_err(e)}
 
 
 def fetch_allstarlink(callsign):
@@ -556,10 +571,10 @@ def fetch_allstarlink(callsign):
         logger.info("AllStarLink DB timeout — marking unavailable")
         return {"status": "unavailable", "data": []}
     except requests.exceptions.HTTPError as e:
-        logger.info(f"AllStarLink HTTP error ({e}) — marking unavailable")
+        logger.info(f"AllStarLink HTTP error ({_safe_err(e)}) — marking unavailable")
         return {"status": "unavailable", "data": []}
     except Exception as e:
-        return {"status": "error", "error": str(e)}
+        return {"status": "error", "error": _safe_err(e)}
 
 
 def fetch_pskreporter(callsign):
@@ -588,7 +603,7 @@ def fetch_pskreporter(callsign):
             reports = [reports]
         return {"status": "ok", "data": reports[:10]}
     except Exception as e:
-        return {"status": "error", "error": str(e)}
+        return {"status": "error", "error": _safe_err(e)}
 
 
 def fetch_weather(lat, lon):
@@ -624,7 +639,7 @@ def fetch_weather(lat, lon):
         cw["wind_cardinal"] = dirs[round((cw.get("winddirection", 0)) / 22.5) % 16]
         return {"status": "ok", "data": cw}
     except Exception as e:
-        return {"status": "error", "error": str(e)}
+        return {"status": "error", "error": _safe_err(e)}
 
 
 def fetch_timezone(lat, lon):
@@ -639,7 +654,7 @@ def fetch_timezone(lat, lon):
     except ImportError:
         return {"status": "not_configured", "error": "timezonefinder not installed"}
     except Exception as e:
-        return {"status": "error", "error": str(e)}
+        return {"status": "error", "error": _safe_err(e)}
 
 
 def fetch_location_blurb(city: str, state: str, country: str) -> list:
@@ -705,7 +720,7 @@ def fetch_location_blurb(city: str, state: str, country: str) -> list:
         logger.info(f"Location blurb for {location_str!r}: {len(lines)} bullet(s)")
         return lines
     except Exception as e:
-        logger.debug(f"Location blurb failed for {location_str!r}: {e}")
+        logger.debug(f"Location blurb failed for {location_str!r}: {_safe_err(e)}")
         return []
 
 
@@ -717,7 +732,7 @@ def get_ecr_coasters() -> list:
         with open("ecr_coasters.json") as f:
             return [c.upper().strip() for c in json.load(f) if c.strip()]
     except Exception as e:
-        logger.warning(f"ECR coasters file error: {e}")
+        logger.warning(f"ECR coasters file error: {_safe_err(e)}")
         return []
 
 
@@ -742,7 +757,7 @@ def get_notable_callsigns() -> dict:
     except FileNotFoundError:
         return {}
     except Exception as e:
-        logger.warning(f"notable_callsigns.json error: {e}")
+        logger.warning(f"notable_callsigns.json error: {_safe_err(e)}")
         return {}
 
 
@@ -901,7 +916,7 @@ def _check_wikipedia(name: str) -> dict:
                 if _name_matches_fuzzy(name, title):
                     return title
         except Exception as e:
-            logger.debug(f"Wikipedia search failed for {query!r}: {e}")
+            logger.debug(f"Wikipedia search failed for {query!r}: {_safe_err(e)}")
         return None
 
     title = _search(primary_query) or _search(fallback_query)
@@ -927,7 +942,7 @@ def _check_wikipedia(name: str) -> dict:
             "known_as":          "",
         }
     except Exception as e:
-        logger.debug(f"Wikipedia summary failed for {title!r}: {e}")
+        logger.debug(f"Wikipedia summary failed for {title!r}: {_safe_err(e)}")
         return {"notable": False}
 
 
@@ -970,7 +985,7 @@ def _check_notability_claude(name: str) -> dict:
                     "wikipedia_url":     None,
                 }
     except Exception as e:
-        logger.debug(f"Claude notability check failed for {name!r}: {e}")
+        logger.debug(f"Claude notability check failed for {name!r}: {_safe_err(e)}")
     return {"notable": False}
 
 
@@ -990,16 +1005,33 @@ def _check_notability(name: str) -> dict:
     return result
 
 
+_fcc_unavailable_logged = False
+
+
 def fetch_fcc_history(callsign: str) -> dict:
-    """Fetch callsign license history from FCC ULS basicSearch API."""
+    """Fetch callsign license history from FCC ULS basicSearch API.
+
+    The FCC License View API has been refusing requests (HTTP 403 after a redirect to www.fcc.gov,
+    or an HTML page instead of JSON). That is reported as "unavailable", logged once per process.
+    """
+    global _fcc_unavailable_logged
     try:
         r = requests.get(
             "https://data.fcc.gov/api/license-view/basicSearch/getLicenses",
             params={"format": "json", "searchValue": callsign, "statusDesc": "Any"},
+            headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
             timeout=3,
         )
-        r.raise_for_status()
-        data = r.json()
+        try:
+            data = r.json() if r.status_code == 200 else None
+        except ValueError:
+            data = None
+        if not isinstance(data, dict):
+            if not _fcc_unavailable_logged:
+                logger.warning(f"FCC ULS history unavailable: HTTP {r.status_code} from {r.url.split('?')[0]}"
+                               " (the FCC License View API is refusing requests; logged once)")
+                _fcc_unavailable_logged = True
+            return {"status": "unavailable", "error": f"FCC answered HTTP {r.status_code}", "licenses": []}
         licenses = (data.get("Licenses") or {}).get("License", [])
         if isinstance(licenses, dict):
             licenses = [licenses]
@@ -1018,8 +1050,8 @@ def fetch_fcc_history(callsign: str) -> dict:
         logger.info(f"FCC ULS history timeout for {callsign}")
         return {"status": "timeout", "licenses": []}
     except Exception as e:
-        logger.error(f"FCC ULS history error for {callsign}: {e}")
-        return {"status": "error", "error": str(e), "licenses": []}
+        logger.error(f"FCC ULS history error for {callsign}: {_safe_err(e)}")
+        return {"status": "error", "error": _safe_err(e), "licenses": []}
 
 
 def fetch_callsign_history(callsign: str, current_name: str = "",
@@ -1190,7 +1222,7 @@ def get_solar_conditions() -> dict | None:
         )
         return data
     except Exception as e:
-        logger.debug(f"Solar conditions fetch failed: {e}")
+        logger.debug(f"Solar conditions fetch failed: {_safe_err(e)}")
         return None
 
 
@@ -1222,7 +1254,7 @@ def get_portable_ops(callsign: str) -> dict:
             "qsos":         hunter.get("qsos"),
         } if hunter else None
     except Exception as e:
-        logger.debug(f"POTA stats error for {cs}: {e}")
+        logger.debug(f"POTA stats error for {cs}: {_safe_err(e)}")
         pota_activator, pota_hunter = None, None
 
     return {
@@ -1232,6 +1264,27 @@ def get_portable_ops(callsign: str) -> dict:
         "sota_activator": None,
         "sota_chaser":    None,
     }
+
+# ─── Optional password ────────────────────────────────────────────────────────
+# With HAMLOOKUP_PASSWORD set, every page and API call asks for it (HTTP Basic auth: the browser
+# shows its own login box and remembers it). Any user name is accepted. Use HTTPS (a reverse proxy
+# or Cloudflare) when the page is reachable from outside: Basic auth sends the password with every
+# request.
+
+@app.before_request
+def _require_password():
+    password = os.environ.get("HAMLOOKUP_PASSWORD", "")
+    if not password:
+        return None
+    auth = request.authorization
+    given = (auth.password or "") if auth and auth.type == "basic" else ""
+    if given and hmac.compare_digest(given.encode("utf-8"), password.encode("utf-8")):
+        return None
+    if given:
+        logger.warning("Wrong Ham Lookup password from %s", request.remote_addr)
+        time.sleep(1)  # slows down guessing
+    return Response("Password required", 401, {"WWW-Authenticate": 'Basic realm="Ham Lookup", charset="UTF-8"'})
+
 
 # ─── Flask Routes ─────────────────────────────────────────────────────────────
 
@@ -1290,7 +1343,7 @@ def lookup():
             try:
                 results[key] = f.result()
             except Exception as e:
-                results[key] = {"status": "error", "error": str(e)}
+                results[key] = {"status": "error", "error": _safe_err(e)}
         for f in not_done:
             results[futures[f]] = {"status": "error", "error": "Timeout after 11s"}
             f.cancel()
@@ -1547,4 +1600,5 @@ def build_qso_record(body: dict) -> tuple[dict, str]:
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    # The Werkzeug debugger runs code from the browser: only with FLASK_DEBUG=1, and only on localhost
+    app.run(debug=os.environ.get("FLASK_DEBUG") == "1", port=5000)

@@ -58,6 +58,25 @@ The tests are offline: every logger API is replaced by a fake, and your `.env` i
 `.env` holds your passwords and API keys. It is listed in `.gitignore`; never commit it or paste it
 into an issue. Club Log in particular scans GitHub and revokes any application key it finds there.
 
+## Security and privacy
+
+- **Login is optional.** Without one, anyone who can open the page can look up calls and log QSOs to
+  your loggers. On a home network that is usually fine; don't forward port 5000 from your router.
+  Set `HAMLOOKUP_PASSWORD` in `.env` and the browser asks for that password first (any user name
+  works). If you want it reachable from outside, put it behind HTTPS too: a VPN (WireGuard,
+  Tailscale), Cloudflare Access, or a reverse proxy. The password travels with every request, so
+  over plain HTTP anyone on the path could read it.
+- **Error messages hide keys.** Several services take your password or API key in the request URL;
+  Ham Lookup strips the query string from every error it shows or logs.
+- **`data/` holds a copy of your log** (callsigns, dates, names). It is ignored by git and Docker builds.
+  Delete it any time; it is rebuilt from your logger.
+- **Who sees what you look up.** Each lookup sends the callsign to the services you configured (QRZ,
+  HamQTH, QRZCQ, Club Log, Callook, HamDB, PSK Reporter, AllStarLink, POTA/SOTA, FCC) and the station's
+  location to Open-Meteo and Wikipedia. With `ANTHROPIC_API_KEY` set, the names of the callsign's
+  current and previous license holders (public FCC data) are sent to Anthropic to check notability.
+- **`python app.py` runs without the Flask debugger.** Set `FLASK_DEBUG=1` only on your own machine:
+  the debugger can run code from the browser.
+
 ---
 
 ## Environment Variables
@@ -221,6 +240,7 @@ No LoTW/eQSL data is shown for unworked stations, as neither service has a publi
 ### Other optional settings
 | Variable | Description |
 |---|---|
+| HAMLOOKUP_PASSWORD | Ask for this password before showing Ham Lookup. Blank: no password. |
 | MAPTILER_API_KEY | Interactive maps. Free key at https://cloud.maptiler.com/account/keys/ |
 | ANTHROPIC_API_KEY | Enables the notability check on a callsign's previous holders. |
 

@@ -1514,12 +1514,16 @@ function renderSocialIcons(social) {
     const border = value ? '1px solid rgba(0,212,170,0.4)' : '1px solid #3a3d47';
     const svg    = SOCIAL_ICONS[key](color);
 
+    // Profile links come from other hams' QRZ/HamQTH profiles: only http(s) links are made, so a
+    // value such as "javascript:..." can never run in this page.
     let href = null;
     if (value) {
-      if      (key === 'web')      href = value.startsWith('http') ? value : `https://${value}`;
-      else if (key === 'twitter')  href = value.startsWith('http') ? value : `https://x.com/${value.replace(/^@/, '')}`;
-      else if (key === 'skype')    href = null;
-      else                         href = value;
+      const v = String(value).trim();
+      const isUrl = /^https?:\/\//i.test(v);
+      if      (key === 'skype')    href = null;
+      else if (key === 'twitter')  href = isUrl ? v : `https://x.com/${encodeURIComponent(v.replace(/^@/, ''))}`;
+      else if (isUrl)              href = v;
+      else if (/^[a-z0-9.-]+\.[a-z]{2,}(\/\S*)?$/i.test(v)) href = `https://${v}`;   // "example.com/page"
     }
 
     const titleAttr = `title="${esc(label)}${value ? ': ' + esc(value) : ''}"`;
