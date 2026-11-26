@@ -3,7 +3,11 @@
 A self-hosted web app that looks up an amateur radio callsign across many sources at once
 (FCC ULS, Callook, QRZ.com, HamQTH, QRZCQ, Club Log, PSK Reporter, AllStarLink, POTA/SOTA),
 shows the station on a map with beam heading and distance from your grid, and checks your own
-Wavelog log for previous QSOs. You can log a new QSO to Wavelog straight from the result.
+log for previous QSOs. You can log a new QSO straight from the result.
+
+Your log can come from Wavelog, QRZ Logbook, Club Log, LoTW, World Radio League or any ADIF file,
+and new QSOs can go to Wavelog, Cloudlog, QRZ Logbook, Club Log and World Radio League, several at
+once. See [Your log](#your-log).
 
 Every user runs their own copy with their own API keys. Nothing is shared or hosted for you.
 
@@ -27,6 +31,9 @@ git pull && docker compose up -d --build
 `rebuild.sh` does the same thing with plain `docker` commands, for hosts without Compose
 (for example Unraid's terminal).
 
+Your log is cached in `./data` (mounted into the container), so it survives rebuilds. That folder
+holds your QSOs and is ignored by git.
+
 ## Without Docker
 
 Requires Python 3.10 or newer.
@@ -36,6 +43,15 @@ pip install -r requirements.txt
 cp .env.example .env      # edit it
 python app.py
 ```
+
+## Tests
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+The tests are offline: every logger API is replaced by a fake, and your `.env` is never read.
 
 ## Keep your keys private
 
@@ -85,22 +101,104 @@ Free account: https://www.qrzcq.com
 ### Clublog (free application key)
 | Variable | Required | Description |
 |---|---|---|
-| CLUBLOG_API_KEY | Yes (for Clublog) | 40-character hex application API key |
+| CLUBLOG_API_KEY | Yes (for Clublog) | 40-character hex application API key (also used to log QSOs to Club Log) |
 
 Request your key: https://clublog.org/requestapikey.php
 This is a per-application key, not per-user. Keep it out of public repos — Clublog scans GitHub and auto-revokes exposed keys.
 Provides: DXCC entity, CQ zone, continent, lat/lon, blocked status.
 
+## Your log
+
+Two settings decide where your log comes from and where new QSOs go:
+
+| Variable | Description |
+|---|---|
+| LOG_SOURCE | Where "worked before" history comes from: `wavelog`, `qrz`, `clublog`, `lotw`, `wrl` or `adif`. Unset: Wavelog, when `WAVELOG_URL` and `WAVELOG_KEY` are set. |
+| LOG_WRITE | Loggers that new QSOs go to, comma separated: `wavelog`, `cloudlog`, `qrz`, `clublog`, `wrl`, e.g. `wavelog,qrz`. Unset: Wavelog, when it is configured. Empty: no Log QSO button. |
+| LOG_REFRESH_MINUTES | Optional. How often the cached log is refreshed. Default per source, below. |
+| DATA_DIR | Optional. Where the cache is kept. Default `data` in the app folder. |
+
+If you used Ham Lookup with Wavelog before these settings existed, nothing changes: leave both unset.
+
+| Logger | Read (worked before) | Write (Log QSO) | Refreshed every |
+|---|---|---|---|
+| Wavelog | Yes | Yes | 5 min |
+| Cloudlog | No export API: export ADIF and use `adif` | Yes | |
+| QRZ Logbook | Yes (needs a QRZ subscription) | Yes | 5 min new QSOs, whole log every 6 h |
+| Club Log | Yes | Yes (real-time upload) | 60 min |
+| LoTW | Yes | No: LoTW only accepts TQSL-signed uploads | 6 h (a full report can take minutes) |
+| World Radio League | Yes (no QSL status) | Yes (needs a frequency) | 60 min |
+| ADIF file or URL | Yes (any logger that exports ADIF) | No | 5 min |
+
+The log check, the QSO list and Your Top Contacts all come from this cache, so a lookup never waits
+on your logger. A QSO you log from Ham Lookup appears in the log check at once. When you log to several
+loggers, each one reports separately; if one fails, the others still get the QSO. A logger that
+already has the QSO counts as logged.
+
 ### Wavelog
 | Variable | Required | Description |
 |---|---|---|
-| WAVELOG_URL | Yes (for Wavelog) | Base URL of your Wavelog instance, e.g. http://192.168.1.x or https://yourdomain.com |
-| WAVELOG_KEY | Yes (for Wavelog) | Your Wavelog API key (Settings → API Keys in Wavelog UI) |
-| WAVELOG_SLUG | Optional | Station logbook public slug (Settings → Station Profiles → Public Slug) |
-| WAVELOG_STATION_ID | Optional | Station Location ID that new QSOs are logged to (Wavelog → Station Locations). Default 1. |
+| WAVELOG_URL | Yes | Base URL of your Wavelog instance, e.g. http://192.168.1.x or https://yourdomain.com |
+| WAVELOG_KEY | Yes | API key (Wavelog → Settings → API). Read+write to log QSOs. |
+| WAVELOG_STATION_ID | Optional | Station Location ID that is read and logged to (Wavelog → Station Locations). Default 1. |
 
-The Wavelog block shows whether you have previously worked the looked-up callsign, with full QSO history including band, mode, RST, QSL/LoTW/eQSL confirmation status per contact, and any comments.
-If the callsign has never been in your log, this block displays "Not in Log" — this is correct and expected behavior. No LoTW/eQSL data is available for unworked stations as neither service provides a public lookup API.
+### Cloudlog
+| Variable | Description |
+|---|---|
+| CLOUDLOG_URL | Base URL of your Cloudlog instance |
+| CLOUDLOG_KEY | A read+write API key, made on Cloudlog's API page |
+| CLOUDLOG_STATION_ID | Station Location ID to log to |
+
+Cloudlog has no API to export a log, so for worked-before history export ADIF from Cloudlog
+(or publish it at a URL) and set `LOG_SOURCE=adif`.
+
+### QRZ Logbook
+| Variable | Description |
+|---|---|
+| QRZ_LOGBOOK_KEY | The logbook's API key (QRZ Logbook → Settings). Separate from `QRZ_USER`/`QRZ_PASS`, which are for callsign data. |
+
+The Logbook API needs a QRZ subscription.
+
+### Club Log
+| Variable | Used for | Description |
+|---|---|---|
+| CLUBLOG_TOKEN | Read | REST token from Club Log → Settings → API (starts with `cl_`) |
+| CLUBLOG_CALLSIGN | Read, write | The log's callsign |
+| CLUBLOG_EMAIL | Write | Your Club Log email |
+| CLUBLOG_APP_PASSWORD | Write | An Application Password (Club Log → Settings → App Passwords), not your login password |
+| CLUBLOG_API_KEY | Write | Your application API key, the same one the DXCC lookup uses |
+
+**The Club Log API key is yours alone.** Club Log issues it per application and revokes any key it
+finds on GitHub or elsewhere in public. Request your own at https://clublog.org/requestapikey.php,
+keep it in `.env`, and never commit it. Club Log also firewalls clients that keep sending a bad login,
+so after one failed login Ham Lookup stops writing to Club Log until it is restarted.
+
+### LoTW
+| Variable | Description |
+|---|---|
+| LOTW_USERNAME | Your LoTW website login |
+| LOTW_PASSWORD | Your LoTW website password |
+| LOTW_OWNCALL | Optional: only QSOs made as this callsign |
+
+Read only. LoTW builds the whole report on every request, so it is read every 6 hours.
+
+### World Radio League
+| Variable | Description |
+|---|---|
+| WRL_API_KEY | WRL → Integrations → Developer API (`wrl_live_...`) |
+| WRL_LOGBOOK_ID | Optional: logbook to log to (default: your default WRL logbook) |
+| WRL_STATION_CALLSIGN | Optional: your station callsign (default: the logbook's or your profile's) |
+
+WRL contacts carry no QSL status, so the log check shows no confirmations. Logging to WRL needs the
+frequency filled in.
+
+### ADIF file or URL
+| Variable | Description |
+|---|---|
+| ADIF_PATH | Path to an `.adi` file (relative to the app folder; in Docker put it in `./data`), or an http(s) URL |
+
+If you have never worked the looked-up callsign, the log check shows "Not in Log". That is expected.
+No LoTW/eQSL data is shown for unworked stations, as neither service has a public lookup API.
 
 ---
 
@@ -114,7 +212,7 @@ If the callsign has never been in your log, this block displays "Not in Log" —
 | HamQTH | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | Free |
 | QRZCQ | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | Free |
 | Clublog | DXCC only | ✗ | ✗ | ✓ | ✗ | ✗ | Free (app key) |
-| Wavelog | Your log only | ✗ | ✗ | ✗ | Per-QSO | Per-QSO | Self-hosted |
+| Your log | Your log only | ✗ | ✗ | ✗ | Per-QSO | Per-QSO | Depends on the logger |
 | PSK Reporter | Activity only | ✗ | ✗ | ✓ | ✗ | ✗ | Free |
 | Open-Meteo | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | Free |
 

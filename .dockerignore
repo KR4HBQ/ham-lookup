@@ -4,3 +4,5 @@ Old/
 data/
 __pycache__/
 *.adi
+tests/
+.pytest_cache/

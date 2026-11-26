@@ -3,6 +3,7 @@
 set -e
 APP_DIR="${APP_DIR:-$(cd "$(dirname "$0")" && pwd)}"
 cd "$APP_DIR"
+mkdir -p "$APP_DIR/data"
 docker build -t ham-lookup:latest .
 docker stop ham-lookup 2>/dev/null || true
 docker rm ham-lookup 2>/dev/null || true
@@ -13,4 +14,5 @@ docker run -d \
   --env-file "$APP_DIR/.env" \
   -v "$APP_DIR/ecr_coasters.json:/app/ecr_coasters.json" \
   -v "$APP_DIR/notable_callsigns.json:/app/notable_callsigns.json" \
+  -v "$APP_DIR/data:/app/data" \
   ham-lookup:latest
