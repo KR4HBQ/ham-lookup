@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest a new source, logger or feature.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it help?
+  - type: input
+    id: api
+    attributes:
+      label: API documentation (for a new source or logger)
+      description: A link to the service's API docs, if there is one.
