@@ -1,5 +1,7 @@
 # Ham Lookup
 
+[![Tests](https://github.com/KR4HBQ/ham-lookup/actions/workflows/tests.yml/badge.svg)](https://github.com/KR4HBQ/ham-lookup/actions/workflows/tests.yml)
+
 A self-hosted web app that looks up an amateur radio callsign across many sources at once
 (FCC ULS, Callook, QRZ.com, HamQTH, QRZCQ, Club Log, PSK Reporter, AllStarLink, POTA/SOTA),
 shows the station on a map with beam heading and distance from your grid, and checks your own
